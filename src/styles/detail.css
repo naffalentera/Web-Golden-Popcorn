@@ -1,0 +1,132 @@
+/* Styling untuk halaman GoldenPopcorn */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.header-container {
+    max-width: 100%;
+    padding-left: 45px;
+    padding-right: 45px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+
+.drama-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.drama-image {
+    background-color: #ccc;
+    height: 600px;
+}
+
+.actor-card {
+    display: inline-block;
+    width: 100px;
+    height: 150px;
+    margin-right: 15px;
+    text-align: center;
+    background-color: #ccc;
+    line-height: 150px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.video-placeholder {
+    background-color: #ddd;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #666;
+    border-radius: 5px;
+}
+
+.review-stars {
+    color: #ff9900;
+    margin-right: 10px;
+}
+
+.rating {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+textarea {
+    resize: none;
+}
+
+h4 {
+    margin-top: 30px;
+    font-weight: bold;
+}
+
+.my-logo {
+    font-size: 25px;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding-right: 10px;
+}
+
+.search-container input[type="text"] {
+    border: none;
+    outline: none;
+    flex-grow: 1;
+    padding-left: 10px;
+}
+
+.search-container button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 20;
+    cursor: pointer;
+    color: #6c757d;
+    flex-grow: 0;
+}
+
+.actor-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.actor-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: 10px;
+    padding: 10px;
+}
+
+.actor-card img {
+    width: 200px;
+    height: 200px;
+}
+
+.actor-card p {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.fullscreen-video {
+    height: 50vh;
+    border-radius: 20px;
+}
+
+.fullscreen-video iframe {
+    border-radius: 20px;
+
+}
