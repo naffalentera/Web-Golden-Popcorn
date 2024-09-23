@@ -1,0 +1,248 @@
+:root {
+    --golden-color: #C6A628;
+    --text-light: #ffffff;
+  }
+  
+  body {
+    background-color: #000000;
+    color: var(--text-light);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+    
+  .btn {
+    font-size: 16px;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-golden {
+    background-color: var(--golden-color);
+    border: 1px solid var(--golden-color);
+    color: var(--text-light);
+  }
+  
+  .btn-golden-outline {
+    background-color: transparent;
+    color: var(--golden-color);
+    border-radius: 5px;
+    padding: 5px 10px;
+  }
+  
+  .btn:hover {
+    background-color: transparent;
+    border: 1px solid var(--golden-color);
+    color: var(--golden-color);
+    opacity: 0.8;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Custom search input */
+
+  .search-container {
+    position: relative; /* For absolute positioning of the icon */
+    width: 100%;
+    max-width: 500px; /* Set a max-width for better responsiveness */
+    margin: 10px;
+  }
+  
+  .custom-search-input {
+    background-color: #ffffff; /* Gray background */
+    color: white; /* Text color */
+    border: none;
+    border-radius: 50px; /* Rounded corners */
+    transition: border 0.3s ease; /* Smooth transition for border color */
+    opacity: 0.8;
+    padding-left: 35px; /* Space for the icon */
+  }
+  
+    
+  /* Border color on focus */
+  .custom-search-input:focus {
+    border: 1px solid var(--golden-color); /* White border when focused */
+    outline: none; /* Remove default outline */
+    box-shadow: none; /* Remove default shadow */
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 10px; /* Position the icon inside the input */
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--golden-color); /* Icon color */
+  }
+
+  
+  .navbar {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    flex-wrap: wrap; /* Ensure responsiveness */
+  }
+
+  .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.5); 
+  }
+  
+  .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28198, 166, 40, 1%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+  }
+
+  .navbar-toggler:focus {
+    border: 1px solid var(--golden-color);
+    outline: none; 
+    box-shadow: none; 
+  }
+
+
+  
+    
+/* Watchlist button styling */
+.watchlist-button {
+    background-color: #ffffff; /* Dark background */
+    opacity: 0.8;
+    color: var(--golden-color); /* White text color */
+    display: flex; /* Flex to align icon and text */
+    align-items: center; /* Center icon and text vertically */
+  }
+
+
+  #filterAside {
+    width: 250px; /* Adjust the width */
+    padding: 20px; /* Add padding inside the sidebar */
+    background-color: #1a1a1a; /* Optional: Change background color */
+    border-right: 2px solid #333; /* Optional: Add a border to separate from main content */
+}
+
+/* Adjust filters section inside the sidebar */
+#filterAside .filters {
+    margin-top: 20px; /* Add some spacing at the top */
+}
+
+/* Adjust dropdown and input styles */
+#filterAside .form-select, 
+#filterAside .form-control {
+    margin-bottom: 15px; /* Add space between form elements */
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    padding: 20px; /* Add padding to the main content area */
+}
+
+/* Flexbox container to manage layout */
+.main-container {
+    display: flex;
+    gap: 20px; /* Add space between sidebar and main content */
+}
+
+.btn-clear {
+    background-color: transparent;
+    color: #E50914; /* Red text color */
+    border: 1px solid #E50914; /* Red border */
+    transition: all 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.btn-clear:hover {
+    background-color: #E50914; /* Red background on hover */
+    color: #ffffff; /* White text on hover */
+    border-color: #E50914; /* Maintain border color on hover */
+}
+
+.card {
+    background-color: transparent !important; /* Set inner card background to transparent */
+    border: none !important; /* Remove border if any */
+}
+/* Custom styles for card body */
+.card-body {
+    background-color: transparent !important; /* Ensure the body has no background */
+    padding: 0 !important; /* Adjust padding as needed */
+}
+
+.card-text {
+    color: #ffffff; /* Set text color to white */
+    margin-bottom: 8px; /* Add spacing between text elements */
+}
+
+/* Custom styles for card title */
+.card-title {
+    color: #ffffff; /* Set title color to white */
+    margin-bottom: 12px; /* Add some spacing below the title */
+}
+
+.movie-card {
+    max-width: 700px; /* Maximum width for larger screens */
+    border: 2px solid #2e2e2e; /* Dark border around the card */
+    border-radius: 15px; /* Rounded corners for the card */
+    padding: 20px; /* Padding inside the card */
+    background-color: transparent; /* Dark background for the card */
+    color: #ffffff; /* White text color */
+}
+
+.movie-image {
+    border-radius: 15px;
+    width: 150px; /* Adjust image size for smaller screens */
+    height: 225px;
+    object-fit: cover; /* Ensure the image covers the area without distortion */
+    margin-right: 20px;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #222;
+  height: 100vh;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-right: 1px solid #444;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-list li {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.menu-list .nav-link {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.menu-list .nav-link:hover {
+  color: #C6A628;
+}
+.menu-list .active .nav-link {
+  color: #C6A628;
+  background-color: #333;
+  border-radius: 4px;
+}
+
+.submenu {
+  list-style: none;
+  padding-left: 20px; /* Indentation for the submenu */
+  
+}
+
+.submenu .nav-link {
+  font-size: 14px;
+  color: #FFFFFF;
+}
