@@ -4,6 +4,7 @@ import Home from "./views/Home";
 import Detail from "./views/Detail";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
+import "./styles/detail.css";
 import Layout from "./layouts/Layout"; // Import Layout component
 import Drama from "./components/Drama";
 import Actor from "./components/Actor";

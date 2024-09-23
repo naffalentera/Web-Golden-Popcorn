@@ -1,16 +1,15 @@
 import React from "react";
+import "../styles/detail.css";
 
 const ActorCard = ({ name, imageUrl }) => {
   return (
-    <div className="card text-center h-100">
+    <div className="actor-card text-center">
       <img
         src={imageUrl}
         alt={`${name}'s portrait`}
-        className="card-img-top"
-        style={{ height: "250px", objectFit: "cover" }}
       />
       <div className="card-body">
-        <p className="card-text fw-bold">{name}</p>
+        <p>{name}</p>
       </div>
     </div>
   );

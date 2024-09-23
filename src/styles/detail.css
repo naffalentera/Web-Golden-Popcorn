@@ -1,132 +1,215 @@
-/* Styling untuk halaman GoldenPopcorn */
+/* Global Styles */
 body {
-    font-family: Arial, sans-serif;
-}
-
-.header-container {
-    max-width: 100%;
-    padding-left: 45px;
-    padding-right: 45px;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh !important;
 }
 
 .container {
-    max-width: 900px;
-    margin: auto;
+  max-width: 1000px !important;
+  margin:  auto !important;
+  padding: 20px !important;
+  background-color: transparent !important;
 }
 
-.drama-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 10px;
+/* Buttons */
+.btn {
+  font-size: 16px !important;
+  padding: 5px 15px !important;
+  border-radius: 5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
 }
 
-.drama-image {
-    background-color: #ccc;
-    height: 600px;
+.btn-golden {
+  background-color: #C6A628 !important;
+  border: 1px solid #C6A628 !important;
+  color: #ffffff !important;
 }
 
-.actor-card {
-    display: inline-block;
-    width: 100px;
-    height: 150px;
-    margin-right: 15px;
-    text-align: center;
-    background-color: #ccc;
-    line-height: 150px;
-    border-radius: 5px;
-    margin-bottom: 20px;
+.btn-golden-outline {
+  background-color: transparent !important;
+  color: #C6A628 !important;
+  border-radius: 5px !important;
+  padding: 5px 10px !important;
 }
 
-.video-placeholder {
-    background-color: #ddd;
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: #666;
-    border-radius: 5px;
+.btn:hover {
+  background-color: transparent !important;
+  border: 1px solid #C6A628 !important;
+  color: #C6A628 !important;
+  opacity: 0.8 !important;
 }
 
-.review-stars {
-    color: #ff9900;
-    margin-right: 10px;
-}
-
-.rating {
-    font-size: 18px;
-    margin-bottom: 10px;
-}
-
-textarea {
-    resize: none;
-}
-
-h4 {
-    margin-top: 30px;
-    font-weight: bold;
-}
-
-.my-logo {
-    font-size: 25px;
-}
-
+/* Custom Search Input */
 .search-container {
-    display: flex;
-    align-items: center;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding-right: 10px;
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 10px;
 }
 
-.search-container input[type="text"] {
-    border: none;
-    outline: none;
-    flex-grow: 1;
-    padding-left: 10px;
+.custom-search-input {
+  background-color: #ffffff;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding-left: 35px !important;
+  opacity: 0.8;
+  transition: border 0.3s ease;
 }
 
-.search-container button {
-    background: none;
-    border: none;
-    padding: 0;
-    margin-left: 20;
-    cursor: pointer;
-    color: #6c757d;
-    flex-grow: 0;
+.custom-search-input:focus {
+  border: 1px solid #C6A628;
+  outline: none;
+  box-shadow: none;
 }
 
-.actor-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff;
 }
 
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(198, 166, 40, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.navbar-toggler:focus {
+  border: 1px solid #C6A628;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Watchlist Button */
+.watchlist-button {
+  background-color: #ffffff !important;
+  opacity: 0.8 !important;
+  color: #C6A628 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Sidebar Filters */
+#filterAside {
+  width: 250px !important;
+  padding: 20px !important;
+  background-color: #1a1a1a !important;
+  border-right: 2px solid #333 !important;
+}
+
+#filterAside .filters {
+  margin-top: 20px !important;
+}
+
+#filterAside .form-select, 
+#filterAside .form-control {
+  margin-bottom: 15px !important;
+}
+
+/* Actor Cards */
 .actor-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin: 10px;
-    padding: 10px;
+  display: inline-block;
+  width: 200px;
+  height: 250px;
+  margin-right: 10px;
+  text-align: center;
+  background-color: #C6A628;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.actor-card:hover {
+  box-shadow: 4px 4px 8px rgba(255, 255, 255, 0.4);
+  transform: scale(0.99);
 }
 
 .actor-card img {
-    width: 200px;
-    height: 200px;
+  width: 100%;
+  height: 80%;
+  object-fit: cover;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.actor-card .card-body {
+  padding: 10px 0;
 }
 
 .actor-card p {
-    font-size: 1rem;
-    font-weight: bold;
+  font-size: 1rem;
+  color: white;
+  font-family: 'Plus Jakarta Sans';
+  margin: 0;
+  font-weight: bold;
 }
 
+/* Drama Styles */
+.drama-title {
+  font-size: 24px !important;
+  font-weight: bold !important;
+  margin-top: 10px !important;
+}
+
+.drama-image {
+  background-color: #000000 !important;
+}
+
+/* Video Placeholder */
+.video-placeholder {
+  background-color: #000000 !important;
+  height: 200px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 24px !important;
+  color: #666 !important;
+  border-radius: 5px !important;
+}
+
+/* Review Stars */
+.review-stars {
+  color: #C6A628 !important;
+  margin-right: 10px !important;
+}
+
+.rating {
+  font-size: 18px !important;
+  margin-bottom: 10px !important;
+}
+
+/* Fullscreen Video */
 .fullscreen-video {
-    height: 50vh;
-    border-radius: 20px;
+  height: 50vh !important;
+  border-radius: 20px !important;
 }
 
 .fullscreen-video iframe {
-    border-radius: 20px;
-
+  border-radius: 20px !important;
 }
+
+/* Textarea */
+textarea {
+  resize: none !important;
+}
+
