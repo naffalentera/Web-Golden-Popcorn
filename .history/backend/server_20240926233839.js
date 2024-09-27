@@ -16,19 +16,37 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// API endpoint untuk mendapatkan film berdasarkan query di search page
+// API endpoint untuk mendapatkan film berdasarkan query
+// app.get('/api/movies', async (req, res) => {
+//   const { query } = req.query;
+//   try {
+//     const searchQuery = `%${query}%`;
+//     const result = await pool.query(`
+//       SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, movies.poster, movies.trailer
+//       FROM movies
+//       LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+//       LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+//       WHERE movies.title ILIKE $1 AND movies.status = 'approved'
+//       GROUP BY movies.id_movie;
+//     `, [searchQuery]);
+
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server Error');
+//   }
+// });
+
 app.get('/api/movies', async (req, res) => {
   const { query, genre, country, award, year } = req.query;
 
   try {
     const searchQuery = query ? `%${query}%` : '%';
-    const genreFilter = genre && genre !== 'all' ? genre : '%';
-    const countryFilter = country && country !== 'all' ? country : '%';
-    const awardFilter = award && award !== 'all' ? award : '%';
-    const yearFilter = year && year !== 'all' ? year : '%';
+    const genreFilter = genre !== 'all' ? genre : '%';
+    const countryFilter = country !== 'all' ? country : '%';
+    const awardFilter = award !== 'all' ? award : '%';
+    const yearFilter = year !== 'all' ? year : '%';
 
-    console.log('Filters applied in SQL:', { genreFilter, countryFilter, awardFilter, yearFilter });
-    
     const result = await pool.query(`
       SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, countries.name as country, movies.poster, movies.trailer
       FROM movies
@@ -38,9 +56,10 @@ app.get('/api/movies', async (req, res) => {
       LEFT JOIN movie_awards ON movies.id_movie = movie_awards.id_movie
       LEFT JOIN awards ON movie_awards.id_award = awards.id_award
       WHERE movies.title ILIKE $1
-      AND ($2::text = '%' OR genres.name ILIKE $2)
-      AND ($3::text = '%' OR countries.name ILIKE $3)
-      AND ($4::text = '%' OR awards.name ILIKE $4)
+      AND (genres.name ILIKE $2 OR $2 = '%')
+AND (countries.name ILIKE $3 OR $3 = '%')
+AND (awards.name ILIKE $4 OR $4 = '%')
+
       AND ($5::text = '%' OR movies.year::text = $5)
       AND movies.status = 'approved'
       GROUP BY movies.id_movie, countries.name;

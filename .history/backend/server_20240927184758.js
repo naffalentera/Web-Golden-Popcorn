@@ -16,7 +16,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// API endpoint untuk mendapatkan film berdasarkan query di search page
+// API endpoint untuk mendapatkan film berdasarkan query
 app.get('/api/movies', async (req, res) => {
   const { query, genre, country, award, year } = req.query;
 
