@@ -13,7 +13,7 @@ function Sidebar() {
   };
 
   return (
-    <div className="sidebar d-flex flex-column vh-100 bg-dark">
+    <div className="sidebar">
       <div className="logo-section d-flex align-items-center mb-4">
       <img src="/images/logo popcorn.png" alt="Logo" style={{ width: '40px', height: '40px' }}/>
             <span className="golden ms-2" style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '28px' }}>Golden</span>
@@ -21,14 +21,14 @@ function Sidebar() {
           
       </div>
 
-      <ul className="menu-list nav flex-column">
+      <ul className="menu-list nav-box">
         <li className={`nav-item ${activePage === '/dashboard' ? 'active' : ''}`} onClick={() => handleMenuClick('/dashboard')}>
           <a className="nav-link" href="/dashboard">Dashboard</a>
         </li>
 
         <li className="nav-item">
           <div className="nav-link" style={{pointerEvents: 'none' }}>Movies</div>
-          <ul className="submenu nav flex-column" >
+          <ul className="submenu nav" >
             <li style={{ borderBottom: 'none',  paddingBottom: '0px'}} className={`nav-item ${activePage === '/movie-validate' ? 'active' : ''}`} onClick={() => handleMenuClick('/movie-validate')}>
               <a className="nav-link" href="/movie-validate">Validate</a>
             </li>
