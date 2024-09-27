@@ -118,7 +118,7 @@
 
 
   #filterAside {
-    width: 250px; /* Adjust the width */
+    width: 220px; /* Adjust the width */
     padding: 20px; /* Add padding inside the sidebar */
     background-color: #1a1a1a; /* Optional: Change background color */
     border-right: 2px solid #333; /* Optional: Add a border to separate from main content */
@@ -199,7 +199,7 @@
 }
 
 .sidebar {
-  width: 250px;
+  width: 220px;
   background-color: #222;
   height: 100vh;
   padding: 10px;
@@ -224,7 +224,8 @@
 .menu-list .nav-link {
   color: #FFFFFF;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 17px;
+  padding-left: 10px;
 }
 
 .menu-list .nav-link:hover {
@@ -239,10 +240,26 @@
 .submenu {
   list-style: none;
   padding-left: 20px; /* Indentation for the submenu */
-  
+  flex-direction: column !important;
 }
 
 .submenu .nav-link {
   font-size: 14px;
   color: #FFFFFF;
+}
+
+.submenu .nav-item {
+  padding: 10px 0; /* Menambahkan jarak yang sama di atas dan bawah */
+}
+
+.submenu .nav-link {
+  padding: 0; /* Jika link memiliki padding sendiri, Anda bisa set ke nol */
+}
+
+.nav-box {
+  padding-left: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
 }

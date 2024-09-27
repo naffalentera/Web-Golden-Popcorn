@@ -12,11 +12,13 @@ import NewPasswordPage from './pages/user/NewPassword';
 import EmailConfirmationPage from './pages/user/EmailConfirmation';
 
 import MovieInputPage from './pages/admin/MovieInput';
+import MovieValidatePage from './pages/admin/MovieValidate';
 import DashboardPage from './pages/admin/Dashboard';
 import CountriesPage from './pages/admin/Countries';
 import AwardsPage from './pages/admin/Awards';
 import GenresPage from './pages/admin/Genres';
 import UsersPage from './pages/admin/Users';
+import ActorPage from './pages/admin/Actor';
 
 import "./styles/detail.css";
 
@@ -39,12 +41,14 @@ function App() {
         
 
         {/* CMS - Admin */}
+        <Route path="/movie-validate" element={<MovieValidatePage />} />
         <Route path="/movie-input" element={<MovieInputPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/countries" element={<CountriesPage />} />
         <Route path="/awards" element={<AwardsPage />} />
         <Route path="/genres" element={<GenresPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/actor" element={<ActorPage />} />
 
       </Routes>
     </Router>

@@ -1,0 +1,32 @@
+/* Actor.css */
+.custom-card {
+    background-color: #F7F7F7;
+    border: 1px solid #ddd;
+  }
+  
+  .table-custom {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table-custom th, .table-custom td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .table-custom th {
+    background-color: #f4f4f4;
+  }
+  
+  .table-custom tbody tr:nth-child(odd) {
+    background-color: rgba(220, 194, 47, 0.2); /* #DCC22F with 20% opacity */
+  }
+  
+  .table-custom tbody tr:nth-child(even) {
+    background-color: #FFFFFF; /* Color for even rows */
+  }
+  
+  .table-custom tbody tr:hover {
+    background-color: #f1f1f1; /* Optional: Color for hover effect */
+  }
