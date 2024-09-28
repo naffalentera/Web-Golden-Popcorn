@@ -107,27 +107,6 @@ body {
   align-items: center !important;
 }
 
-/* Sidebar Filters */
-#filterAside {
-  width: 220px !important; 
-  padding: 20px !important;
-  background-color: #1a1a1a !important;
-  border-right: 2px solid #333 !important;
-  position: fixed !important;
-  height: 100vh !important;
-}
-
-#filterAside .filters {
-  margin-top: 20px !important;
-}
-
-#filterAside .form-select, 
-.form-control {
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #C6A628;
-}
-
 .form-control::placeholder {
   color: #000000;
 }
