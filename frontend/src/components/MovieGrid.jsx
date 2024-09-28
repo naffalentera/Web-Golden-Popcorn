@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MovieGrid = ({ movies }) => {
+    useEffect(() => {
+        console.log('Movies state updated:', movies);  // Log setiap kali movies diupdate
+    }, [movies]);
+
+    const navigate = useNavigate();
 
     // Fungsi untuk menambahkan movie ke watchlist
     const handleAddWatchlist = (movie) => {
@@ -36,21 +42,29 @@ const MovieGrid = ({ movies }) => {
         });
     };
 
+    const goToDetailPage = (movieId) => {
+        navigate(`/movie/${movieId}`); // Navigasi ke halaman detail film dengan id
+    };
+
     return (
         <main className="container-fluid px-4 mb-3"> 
             <div className="row justify-content-center movie-grid g-4"> 
                 {movies.map((movie) => (
                     <div className="col-md-6" key={movie.id}> 
                         <div className="movie-card d-flex flex-row p-3" style={{ height: '280px' }}> 
-                            <img 
-                                src={movie.poster} 
-                                alt={movie.title} 
-                                className="movie-image rounded-image"
-                                style={{ height: '100%', objectFit: 'cover' }}  
-                            />
+                                <img 
+                                    src={movie.poster || 'https://media.comicbook.com/files/img/default-movie.png'} 
+                                    alt={movie.title} 
+                                    className="movie-image rounded-image"
+                                    style={{ height: '100%', objectFit: 'cover', cursor: 'pointer' }}  
+                                    onClick={() => goToDetailPage(movie.id)}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://media.comicbook.com/files/img/default-movie.png'; }}
+                                />
                             <div className="card-body d-flex flex-column justify-content-between">
                                 <div>
-                                    <h3 className="card-title">{movie.title}</h3>
+                                    <h3 className="card-title"
+                                        style={{ cursor: 'pointer' }} 
+                                        onClick={() => goToDetailPage(movie.id)}>{movie.title}</h3>
                                     <p className="card-text">{movie.description}</p>
                                     <p className="card-text">Genre: {movie.genre && movie.genre.length > 0 ? movie.genre.join(', ') : 'Unknown'}</p>
                                     <p className="card-text">Year: {movie.year}</p>

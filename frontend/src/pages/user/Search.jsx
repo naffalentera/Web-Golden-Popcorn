@@ -7,13 +7,15 @@ import MovieGrid from '../../components/MovieGrid';
 
 const SearchPage = () => {
   const [movies, setMovies] = useState([]);
-  const [sortedMovies, setSortedMovies] = useState([]); // State for movies after sorting
-  const [filteredMovies, setFilteredMovies] = useState({ year: 'all', genre: 'all', country: 'all', award: 'all' }); // State for filtering criteria
-  const [sortBy, setSortBy] = useState('alphabetics-az');  // State for sorting criteria
+  const [sortedMovies, setSortedMovies] = useState([]); // State untuk film yang sudah diurutkan
+  // const [filteredMovies, setFilteredMovies] = useState({ year: 'all', genre: 'all', country: 'all', award: 'all' }); // State untuk kriteria filter
+  const [sortBy, setSortBy] = useState('alphabetics-az');  // State untuk kriteria sorting
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query');
   
-  // Fetch movies based on the search query
+  const [resetFilters, setResetFilters] = useState(false); // State baru untuk reset filter
+  
+  // Fetch movies berdasarkan query pencarian
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -27,83 +29,86 @@ const SearchPage = () => {
 
     if (query) {
       fetchMovies();
+      setResetFilters(true); // Set trigger reset filter saat query berubah
     }
   }, [query]);
 
-  // Apply filtering and sorting
+  // Apply sorting
   useEffect(() => {
-    let filtered = movies;
+    let sorted = [...movies];
 
-    // Apply filtering based on filter criteria
-    if (filteredMovies.year !== 'all') {
-      filtered = filtered.filter(movie => movie.year === parseInt(filteredMovies.year));
-    }
-    if (filteredMovies.genre !== 'all') {
-      filtered = filtered.filter(movie => movie.genre.includes(filteredMovies.genre));
-    }
-    if (filteredMovies.country !== 'all') {
-      filtered = filtered.filter(movie => movie.country === filteredMovies.country);
-    }
-    if (filteredMovies.award !== 'all') {
-      filtered = filtered.filter(movie => movie.award === filteredMovies.award);
-    }
-
-    // Apply sorting
-    let sorted;
     if (sortBy === 'alphabetics-az') {
-      sorted = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === 'alphabetics-za') {
-      sorted = [...filtered].sort((a, b) => b.title.localeCompare(a.title));
+      sorted.sort((a, b) => b.title.localeCompare(a.title));
     } else if (sortBy === 'rating') {
-      sorted = [...filtered].sort((a, b) => b.rating - a.rating);
+      sorted.sort((a, b) => b.rating - a.rating);
     } else if (sortBy === 'year-asc') {
-      sorted = [...filtered].sort((a, b) => a.year - b.year);
+      sorted.sort((a, b) => a.year - b.year);
     } else if (sortBy === 'year-desc') {
-      sorted = [...filtered].sort((a, b) => b.year - a.year);
+      sorted.sort((a, b) => b.year - a.year);
     }
 
     setSortedMovies(sorted);
-  }, [movies, sortBy, filteredMovies]);
+  }, [movies, sortBy]);
 
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
   };
 
-  const handleFilterChange = (filters) => {
-    setFilteredMovies(filters);  // Update the filter criteria based on user input
+  const handleFilterChange = (filters) => {  
+    const { genre, country, award, year } = filters;
+
+    console.log('Fetching filtered movies with:', { query, genre, country, award, year });
+
+    // Fetch data yang difilter dari backend berdasarkan filter
+    fetch(`http://localhost:5000/api/movies?query=${query}&genre=${genre}&country=${country}&award=${award}&year=${year}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log('Filtered movies received:', data);
+        setMovies(data);  // Update state movies dengan hasil yang difilter
+      })
+      .catch(error => {
+        console.error('Error fetching filtered movies:', error);
+      });
   };
 
   return (
-      <div className="d-flex flex-column min-vh-100">
-        <Header />
-        <main className="flex-grow-1 d-flex">
-          <Filter onFilterChange={handleFilterChange} />
-          <div className="col-md-10 mt-3">
-            <div className="d-flex justify-content-end gap-2 align-items-center mb-3">
-              <label htmlFor="sort" className="form-label mb-0">Sorted by:</label>
-              <select id="sort" className="form-select w-auto" value={sortBy} onChange={handleSortChange}>
-                <option value="alphabetics-az">Alphabetics A-Z</option>
-                <option value="alphabetics-za">Alphabetics Z-A</option>
-                <option value="rating">Rating</option>
-                <option value="year-asc">Year (Oldest to Newest)</option>
-                <option value="year-desc">Year (Newest to Oldest)</option>
-              </select>
-            </div>
-            {query ? (
-                <>
-                    <p className="mb-4 text-center">
-                        Showing results for: <span className="text" style={{ color: '#E50914' }}>{query}</span>
-                    </p>
-                    <MovieGrid movies={sortedMovies} />
-                </>
-            ) : (
-                <p className="text-center">Please enter a keyword to search for movies.</p>
-            )}
+    <div className="d-flex flex-column min-vh-100">
+      <Header />
+      <main className="flex-grow-1 d-flex">
+        <Filter 
+          onFilterChange={handleFilterChange} 
+          resetFilters={resetFilters} 
+          onResetComplete={() => setResetFilters(false)} // Fungsi untuk memberitahu reset sudah selesai
+        />
+        <div className="col-md-10 mt-3">
+          <div className="d-flex justify-content-end gap-2 align-items-center mb-3">
+            <label htmlFor="sort" className="form-label mb-0">Sorted by:</label>
+            <select id="sort" className="form-select w-auto" value={sortBy} onChange={handleSortChange}>
+              <option value="alphabetics-az">Alphabetics A-Z</option>
+              <option value="alphabetics-za">Alphabetics Z-A</option>
+              <option value="rating">Rating</option>
+              <option value="year-asc">Year (Oldest to Newest)</option>
+              <option value="year-desc">Year (Newest to Oldest)</option>
+            </select>
           </div>
-        </main>
-        <Footer />
+          {query ? (
+            <>
+              <p className="mb-4 text-center">
+                Showing results for: <span className="text" style={{ color: '#E50914' }}>{query}</span>
+              </p>
+              <MovieGrid movies={sortedMovies} />
+            </>
+          ) : (
+            <p className="text-center">Please enter a keyword to search for movies.</p>
+          )}
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };
+
 
 export default SearchPage;
