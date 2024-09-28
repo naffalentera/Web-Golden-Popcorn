@@ -52,13 +52,14 @@ const MovieGrid = ({ movies }) => {
                 {movies.map((movie) => (
                     <div className="col-md-6" key={movie.id}> 
                         <div className="movie-card d-flex flex-row p-3" style={{ height: '280px' }}> 
-                            <img 
-                                src={movie.poster} 
-                                alt={movie.title} 
-                                className="movie-image rounded-image"
-                                style={{ height: '100%', objectFit: 'cover', cursor: 'pointer' }}  
-                                onClick={() => goToDetailPage(movie.id)}
-                            />
+                                <img 
+                                    src={movie.poster || 'https://media.comicbook.com/files/img/default-movie.png'} 
+                                    alt={movie.title} 
+                                    className="movie-image rounded-image"
+                                    style={{ height: '100%', objectFit: 'cover', cursor: 'pointer' }}  
+                                    onClick={() => goToDetailPage(movie.id)}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://media.comicbook.com/files/img/default-movie.png'; }}
+                                />
                             <div className="card-body d-flex flex-column justify-content-between">
                                 <div>
                                     <h3 className="card-title"
