@@ -48,18 +48,21 @@ const MovieGrid = ({ movies }) => {
 
     return (
         <main className="container-fluid px-4 mb-3"> 
-            <div className="row justify-content-center movie-grid g-4"> 
+            <div className="row justify-content-center g-4"> 
                 {movies.map((movie) => (
                     <div className="col-md-6" key={movie.id}> 
-                        <div className="movie-card d-flex flex-row p-3" style={{ height: '280px' }}> 
-                                <img 
-                                    src={movie.poster || 'https://media.comicbook.com/files/img/default-movie.png'} 
-                                    alt={movie.title} 
-                                    className="movie-image rounded-image"
-                                    style={{ height: '100%', objectFit: 'cover', cursor: 'pointer' }}  
-                                    onClick={() => goToDetailPage(movie.id)}
-                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://media.comicbook.com/files/img/default-movie.png'; }}
-                                />
+                        <div className="movie-card d-flex flex-row p-3"> 
+                            <img 
+                                src={movie.poster || '/images/default-movie.png'} 
+                                alt={movie.title} 
+                                className="movie-image rounded-image"
+                                style={{ height: '100%', objectFit: 'cover', cursor: 'pointer' }}  
+                                onClick={() => goToDetailPage(movie.id)}
+                                onError={(e) => { 
+                                    e.target.onerror = null; 
+                                    e.target.src = '/images/default-movie.png'; 
+                                }}
+                            />
                             <div className="card-body d-flex flex-column justify-content-between">
                                 <div>
                                     <h3 className="card-title"

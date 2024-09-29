@@ -54,6 +54,11 @@ const Header = () => {
     navigate('/profile');
   };
 
+  const handleLogoClick = () => {
+    // Navigate to the home page
+    navigate('/home');
+  };
+
   return (
     <header>
       <nav
@@ -62,7 +67,7 @@ const Header = () => {
 
         <div className="container-fluid">
           {/* Logo */}
-          <a className="navbar-brand d-flex align-items-center" href="#">
+          <a className="navbar-brand d-flex align-items-center" onClick={handleLogoClick}>
             <img src="/images/logo popcorn.png" alt="Logo" style={{ width: '40px', height: '40px' }} />
             <span className="golden ms-2" style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '28px' }}>Golden</span>
             <span className="popcorn" style={{ color: '#FFFFFF', fontFamily: 'Oswald', fontSize: '28px' }}>Popcorn</span>
