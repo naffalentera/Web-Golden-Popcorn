@@ -91,12 +91,14 @@ function DetailPage() {
               <p><strong>Synopsis:</strong> {movie.synopsis}</p>
               <p><strong>Genre:</strong> 
                 <ul>
-                  {movie.genres && movie.genres.length > 0 ? (
-                      movie.genres.map((genre, index) => (
-                          <li key={index}>{genre}</li>
-                      ))
+                  {movie.genres && Array.isArray(movie.genres) ? (
+                    <ul>
+                      {movie.genres.map((genre, index) => (
+                        <li key={index}>{genre.name}</li>
+                      ))}
+                    </ul>
                   ) : (
-                      <li>Unknown</li>  // Tampilkan teks ini jika tidak ada genre
+                    <p>No genres available</p>
                   )}
                 </ul>
               </p>
