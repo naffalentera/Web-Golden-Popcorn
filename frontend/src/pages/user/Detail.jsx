@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
 import "../../styles/detail.css";
 
 import ActorCard from "../../components/ActorCard";
@@ -8,6 +10,40 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 
 function DetailPage() {
+  const { title } = useParams();  // Mengambil title film dari URL
+  const [movie, setMovie] = useState(null);  
+
+  useEffect(() => {
+      const fetchMovieDetail = async () => {
+          try {
+              const response = await fetch(`http://localhost:5000/api/movies/title/${title}`);
+              console.log('Response:', response); // Debugging untuk melihat respons
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              const text = await response.text(); // Ambil data sebagai text terlebih dahulu
+              console.log('Response Text:', text); // Debugging untuk melihat respons text
+              
+              const data = JSON.parse(text); // Coba parse secara manual
+              console.log('Parsed Data:', data);
+
+              // Validasi data sebelum set state
+              if (data && data.title) {
+                  setMovie(data);  
+              } else {
+                  console.error('Invalid movie data:', data);
+              }
+          } catch (error) {
+              console.error('Error fetching movie details:', error);
+          }
+      };
+
+      fetchMovieDetail();
+  }, [title]);
+
+  if (!movie) {
+      return <div>Loading...</div>;  // Menampilkan loading sementara
+  }
 
   const actors = [
     { name: "Actor 1", imageUrl: "/images/actor.jpg" },
@@ -24,8 +60,7 @@ function DetailPage() {
 
   return (
     <div>
-    <Header />
-
+      <Header />
       <div className="container mt-4">
           {/* Title Section */}
           <div className="row justify-content-center">
@@ -34,17 +69,15 @@ function DetailPage() {
               <span style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '40px' }}>Information</span>
             </div>
           </div>
-
           <div className="row justify-content-center align-items-start mt-4">
             {/* Image Section */}
             <div className="col-md-3">
               <div
                 className="drama-image"
                 style={{
-                  backgroundImage: "url('/images/film.jpg')",
+                  backgroundImage: `url(${movie.poster})`,
                   height: "450px",
                   width: "250px",
-
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -52,77 +85,71 @@ function DetailPage() {
             </div>
             {/* Drama Details Section */}
             <div className="col-md-6" style={{ marginLeft: '50px' }}>
-              <h2 className="drama-title">Title of the Drama</h2>
-                <p>
-                  <strong>Other Titles:</strong> Title 2, Title 3
-                </p>
-                <p>
-                  <strong>Year:</strong> Spring 2025
-                </p>
-                <p>
-                  <strong>Synopsis:</strong> Lorem ipsum dolor sit amet, consectetur
-                  adipiscing elit. Pellentesque varius velit eu velit facilisis, id
-                  fermentum mauris convallis.
-                </p>
-                <p>
-                  <strong>Genre:</strong> Thriller
-                </p>
-                <p>
-                  <strong>Director:</strong> Director Name
-                </p>
-                <p>
-                  <strong>Rating:</strong> 9.5/10
-                </p>
+              <h2 className="drama-title">{movie.title}</h2>
+              <p><strong>Other Titles:</strong> {movie.alt_title}</p>
+              <p><strong>Year:</strong> {movie.year}</p>
+              <p><strong>Synopsis:</strong> {movie.synopsis}</p>
+              <p><strong>Genre:</strong> 
+                <ul>
+                  {movie.genres && Array.isArray(movie.genres) ? (
+                    <ul>
+                      {movie.genres.map((genre, index) => (
+                        <li key={index}>{genre.name}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No genres available</p>
+                  )}
+                </ul>
+              </p>
+              <p><strong>Rating:</strong> 9.5/10</p>
             </div>
           </div>
 
-        {/* Subheading Actors*/}
-        <div className="mt-4">
-          <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Actors</h3>
-        </div>
+          {/* Subheading Actors */}
+          <div className="mt-4">
+            <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Actors</h3>
+          </div>
 
-        {/* Actor Cards Section */}
-        <div className="row mt-4">
-          {actors.map((actor, index) => (
-            <div className="col-6 col-md-4 col-lg-3 mb-4" key={index}>
-              <ActorCard name={actor.name} imageUrl={actor.imageUrl} />
-            </div>
-          ))}
-        </div>
+          {/* Actor Cards Section */}
+          <div className="row mt-4">
+            {actors.map((actor, index) => (
+              <div className="col-6 col-md-4 col-lg-3 mb-4" key={index}>
+                <ActorCard name={actor.name} imageUrl={actor.imageUrl} />
+              </div>
+            ))}
+          </div>
 
-        {/* Subheading Youtube Trailer*/}
-        <div className="mt-4">
-          <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Trailer</h3>
-        </div>
+          {/* Subheading Youtube Trailer */}
+          <div className="mt-4">
+            <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Trailer</h3>
+          </div>
 
-        {/* Video Placeholder Section */}
-        <div className="fullscreen-video mt-4">
-          <iframe
-            className="w-100 h-100"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-            allowFullScreen
-            title="YouTube Video"
-          ></iframe>
-        </div>
+          {/* Video Placeholder Section */}
+          <div className="fullscreen-video mt-4">
+            <iframe
+              className="w-100 h-100"
+              src={`https://www.youtube.com/embed/${movie.trailer}`} // Pastikan trailer adalah id video YouTube
+              allowFullScreen
+              title="YouTube Video"
+            ></iframe>
+          </div>
 
-        {/* Review Section */}
-        <div className="mt-4">
-          <div className="row justify-content-between">
-            <div className="col-6 d-flex align-items-center">
-              <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>People think about this</h3>
-            </div>
-            <div className="col-6 d-flex justify-content-end align-items-center">
-              <StarDropdown />
+          {/* Review Section */}
+          <div className="mt-4">
+            <div className="row justify-content-between">
+              <div className="col-6 d-flex align-items-center">
+                <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>People think about this</h3>
+              </div>
+              <div className="col-6 d-flex justify-content-end align-items-center">
+                <StarDropdown />
+              </div>
             </div>
           </div>
-        </div>
 
-        <ReviewList />
-
-        {/* Review Form Section */}
-        <ReviewForm />
+          <ReviewList />
+          <ReviewForm />
       </div>
-
       <Footer />
     </div>
   );
