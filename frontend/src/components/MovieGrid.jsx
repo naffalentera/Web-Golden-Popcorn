@@ -42,8 +42,9 @@ const MovieGrid = ({ movies }) => {
         });
     };
 
-    const goToDetailPage = (movieId) => {
-        navigate(`/movie/${movieId}`); // Navigasi ke halaman detail film dengan id
+    const goToDetailPage = (title) => {
+        const encodedTitle = encodeURIComponent(title); // Encode title
+        navigate(`/movie/title/${encodedTitle}`); // Navigasi ke halaman detail film dengan id
     };
 
     return (
@@ -57,7 +58,7 @@ const MovieGrid = ({ movies }) => {
                                 alt={movie.title} 
                                 className="movie-image rounded-image"
                                 style={{ height: '100%', objectFit: 'cover', cursor: 'pointer' }}  
-                                onClick={() => goToDetailPage(movie.id)}
+                                onClick={() => goToDetailPage(movie.title)}
                                 onError={(e) => { 
                                     e.target.onerror = null; 
                                     e.target.src = '/images/default-movie.png'; 
@@ -67,7 +68,7 @@ const MovieGrid = ({ movies }) => {
                                 <div>
                                     <h3 className="card-title"
                                         style={{ cursor: 'pointer' }} 
-                                        onClick={() => goToDetailPage(movie.id)}>{movie.title}</h3>
+                                        onClick={() => goToDetailPage(movie.title)}>{movie.title}</h3>
                                     <p className="card-text">{movie.description}</p>
                                     <p className="card-text">Genre: {movie.genre && movie.genre.length > 0 ? movie.genre.join(', ') : 'Unknown'}</p>
                                     <p className="card-text">Year: {movie.year}</p>

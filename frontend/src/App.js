@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/user/Login';
 import RegisterPage from './pages/user/Register';
+import HomePage from './pages/user/rumah';
 import DetailPage from "./pages/user/Detail";
 import SearchPage from './pages/user/Search';
 import WatchlistPage from './pages/user/Watchlist';
@@ -29,8 +30,9 @@ function App() {
         {/* Landing page */}
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/detail" element={<DetailPage />} />
+        <Route path="/movie/title/:title" element={<DetailPage />} />
         <Route path="/watchlist" element={<WatchlistPage />} />
         <Route path="/add-movie" element={<AddMoviePage />} />
 
