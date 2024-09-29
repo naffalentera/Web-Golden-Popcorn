@@ -113,10 +113,10 @@ body {
 
 /* Content CMS */
 .content-box{
-  margin-left: 250px; /* Margin harus disesuaikan dengan lebar sidebar */
+  margin-left: 20px; /* Margin harus disesuaikan dengan lebar sidebar */
   margin-right: 20px;
   padding: 20px;
-  width: calc(100% - 250px);  /*Lebar konten dihitung sesuai sisa ruang */
+  width: calc(100% - 230px);  /*Lebar konten dihitung sesuai sisa ruang */
   color: white;
   background-color: #000000;
 }
