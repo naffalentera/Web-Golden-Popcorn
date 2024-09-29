@@ -74,8 +74,11 @@ const HomePage = () => {
   };
 
   return (
-    <div className="d-flex flex-column min-vh-100">
-      <Header />
+    <div>
+      <h1>Welcome to the Home Page!</h1>
+    </div>)
+    // <div className="d-flex flex-column min-vh-100">
+    //   <Header />
       {/* <main className="flex-grow-1 d-flex">
         <Filter 
           onFilterChange={handleFilterChange} 
@@ -105,9 +108,9 @@ const HomePage = () => {
           )}
         </div>
       </main> */}
-      <Footer />
-    </div>
-  );
+  //     <Footer />
+  //   </div>
+  // );
 };
 
 
