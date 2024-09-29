@@ -46,7 +46,7 @@ const Header = () => {
     // Log out the user by clearing the token and navigating to home or login page
     localStorage.removeItem('userToken');
     setIsLoggedIn(false);
-    navigate('/');
+    // navigate('/');
   };
 
   const handleProfileClick = () => {
