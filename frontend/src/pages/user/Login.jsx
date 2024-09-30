@@ -3,10 +3,49 @@ import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 
 function LoginPage() {
-  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // State for error message
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Basic validation
+    if (!username || !password) {
+      setErrorMessage('Username and password are required!');
+      return;
+    }
+
+    // Clear any previous error message
+    setErrorMessage('');
+
+    // Send login request to server
+    fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        localStorage.setItem('token', data.token); // Save JWT token
+        window.location.href = '/home'; // Redirect on successful login
+      } else {
+        setErrorMessage(data.message); // Set error message from server
+      }
+    })
+    .catch(error => {
+      setErrorMessage('An error occurred while logging in. Please try again.');
+      console.error('Error:', error);
+    });
   };
 
   return (
@@ -38,7 +77,7 @@ function LoginPage() {
           }}
         >
           <div className="col-12">
-            <form id="log-in-form">
+            <form id="log-in-form" onSubmit={handleSubmit}>
               <h1 className="mb-4 text-white" style={{ fontWeight: 'bold', fontSize: '3rem' }}>Log In</h1> {/* Bold title */}
               
               {/* Username Field */}
@@ -59,7 +98,6 @@ function LoginPage() {
                     position: 'absolute', 
                     right: '10px', 
                     top: '50%',  
-                    transform: 'translateY(-60%)', 
                     cursor: 'pointer',
                     fontSize: '1.2rem',
                     color: '#6c757d',
@@ -67,17 +105,21 @@ function LoginPage() {
                 >
                   <i className={`fas ${passwordVisible ? 'fa-eye-slash' : 'fa-eye'}`}></i> 
                 </span>
+              </div>
+
+              {/* Error Message */}
+              {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>} {/* Error message below password */}
+
               <div className="d-flex justify-content-between mb-3">
                 <a href="/password-reset" className='text-white'>Forgot password?</a>
               </div>
-            </div>
               
               {/* Log In Button */}
               <Button text="Log In" className="btn btn-golden w-100 rounded-pill mb-3" />
               <div className="text-center text-white mb-3">OR</div>
               {/* Social Media Buttons */}
               <Button className="btn btn-light w-100 rounded-pill mb-2 d-flex align-items-center justify-content-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" style={{ width: '20px' }} className="me-2" />
+                <img src="/images/google_logo.png" alt="Google" style={{ width: '20px' }} className="me-2" />
                 Log in with Google
               </Button> 
             </form>

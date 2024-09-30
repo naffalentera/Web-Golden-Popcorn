@@ -11,6 +11,7 @@
     "dotenv": "^16.4.5",
     "dramaku": "file:",
     "express": "^4.21.0",
+    "express-validator": "^7.2.0",
     "pg": "^8.13.0",
     "react": "^18.3.1",
     "react-bootstrap-validation": "^0.1.11",
