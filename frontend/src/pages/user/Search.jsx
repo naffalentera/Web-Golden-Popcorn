@@ -8,7 +8,6 @@ import MovieGrid from '../../components/MovieGrid';
 const SearchPage = () => {
   const [movies, setMovies] = useState([]);
   const [sortedMovies, setSortedMovies] = useState([]); // State untuk film yang sudah diurutkan
-  // const [filteredMovies, setFilteredMovies] = useState({ year: 'all', genre: 'all', country: 'all', award: 'all' }); // State untuk kriteria filter
   const [sortBy, setSortBy] = useState('alphabetics-az');  // State untuk kriteria sorting
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query');
