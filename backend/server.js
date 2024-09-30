@@ -106,11 +106,26 @@ app.get('/api/awards', async (req, res) => {
 app.get('/api/movies/title/:title', async (req, res) => {
   const { title } = req.params;
   try {
-      const result = await pool.query('SELECT * FROM movies WHERE title = $1', [title]);
-      res.json(result.rows[0]); // Mengembalikan film pertama yang ditemukan
+    const result = await pool.query(
+      `SELECT m.title, array_agg(g.name) AS genres
+       FROM movies m
+       JOIN movie_genres mg ON m.id_movie = mg.id_movie
+       JOIN genres g ON mg.id_genre = g.id_genre
+       WHERE m.title = $1
+       GROUP BY m.id_movie`,
+      [title]  // Menggunakan title dari parameter URL
+    );
+
+    console.log('Query Result:', result.rows);  // Tambahkan log untuk memeriksa hasil query
+
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);  // Mengembalikan film pertama yang ditemukan
+    } else {
+      res.status(404).json({ message: 'Movie not found' });  // Jika tidak ditemukan film
+    }
   } catch (err) {
-      console.error(err);
-      res.status(500).send('Server Error');
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 

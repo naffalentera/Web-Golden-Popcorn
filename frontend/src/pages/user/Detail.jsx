@@ -45,6 +45,15 @@ function DetailPage() {
       return <div>Loading...</div>;  // Menampilkan loading sementara
   }
 
+  const getYoutubeEmbedUrl = (url) => {
+    const videoId = url.split('v=')[1];
+    const ampersandPosition = videoId.indexOf('&');
+    if (ampersandPosition !== -1) {
+        return `https://www.youtube.com/embed/${videoId.substring(0, ampersandPosition)}`;
+    }
+    return `https://www.youtube.com/embed/${videoId}`;
+  };  
+
   const actors = [
     { name: "Actor 1", imageUrl: "/images/actor.jpg" },
     { name: "Actor 2", imageUrl: "/images/actor.jpg" },
@@ -90,13 +99,13 @@ function DetailPage() {
               <p><strong>Year:</strong> {movie.year}</p>
               <p><strong>Synopsis:</strong> {movie.synopsis}</p>
               <p><strong>Genre:</strong> 
-                <ul>
+              <ul>
                   {movie.genres && movie.genres.length > 0 ? (
-                      movie.genres.map((genre, index) => (
-                          <li key={index}>{genre}</li>
-                      ))
+                    movie.genres.map((genre, index) => (
+                      <li key={index}>{genre}</li>  // Menampilkan daftar genre
+                    ))
                   ) : (
-                      <li>Unknown</li>  // Tampilkan teks ini jika tidak ada genre
+                    <li>Unknown</li>  // Jika tidak ada genre
                   )}
                 </ul>
               </p>
@@ -125,12 +134,12 @@ function DetailPage() {
 
           {/* Video Placeholder Section */}
           <div className="fullscreen-video mt-4">
-            <iframe
-              className="w-100 h-100"
-              src={`https://www.youtube.com/embed/${movie.trailer}`} // Pastikan trailer adalah id video YouTube
-              allowFullScreen
-              title="YouTube Video"
-            ></iframe>
+          <iframe
+            className="w-100 h-100"
+            src={getYoutubeEmbedUrl(movie.trailer)}  // Pastikan trailer diubah menjadi format embed
+            allowFullScreen
+            title="YouTube Video"
+        ></iframe>
           </div>
 
           {/* Review Section */}
