@@ -144,7 +144,7 @@
 /* Flexbox container to manage layout */
 .main-container {
     display: flex;
-    gap: 20px; /* Add space between sidebar and main content */
+    gap: 30px 20px; /* Add space between sidebar and main content */
 }
 
 .btn-clear {
@@ -183,6 +183,7 @@
 
 .movie-card {
     max-width: 700px; /* Maximum width for larger screens */
+    max-height: 310px;
     border: 2px solid #2e2e2e; /* Dark border around the card */
     border-radius: 15px; /* Rounded corners for the card */
     padding: 20px; /* Padding inside the card */

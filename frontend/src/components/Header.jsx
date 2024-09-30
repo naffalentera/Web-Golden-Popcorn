@@ -46,12 +46,16 @@ const Header = () => {
     // Log out the user by clearing the token and navigating to home or login page
     localStorage.removeItem('userToken');
     setIsLoggedIn(false);
-    navigate('/');
+    // navigate('/');
   };
 
   const handleProfileClick = () => {
     // Navigate to the user's profile page
     navigate('/profile');
+  };
+
+  const handleLogoClick = () => {
+    navigate('/home');
   };
 
   return (
@@ -62,7 +66,7 @@ const Header = () => {
 
         <div className="container-fluid">
           {/* Logo */}
-          <a className="navbar-brand d-flex align-items-center" href="#">
+          <a className="navbar-brand d-flex align-items-center" style={{ cursor: 'pointer' }} onClick={handleLogoClick}>
             <img src="/images/logo popcorn.png" alt="Logo" style={{ width: '40px', height: '40px' }} />
             <span className="golden ms-2" style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '28px' }}>Golden</span>
             <span className="popcorn" style={{ color: '#FFFFFF', fontFamily: 'Oswald', fontSize: '28px' }}>Popcorn</span>

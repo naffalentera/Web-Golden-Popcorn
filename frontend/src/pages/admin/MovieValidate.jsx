@@ -85,14 +85,15 @@ const Movie = () => {
 
   return (
     <div className="container-box">
+      {/* Sidebar Section*/}
       <aside id="filterAside">
         <Sidebar />
       </aside>
 
       <div className="content-box">
-        {/* Subheading Actors*/}
+        {/* Title Section*/}
         <div className="mt-4 mb-4">
-          <h3 className style={{ color: '#C6A628', fontFamily: 'Plus Jakarta Sans', fontSize: '29px' }}>Validate Movie Data</h3>
+          <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '29px' }}>Validate Movie Data</h3>
         </div>
 
         {/* Filter section */}

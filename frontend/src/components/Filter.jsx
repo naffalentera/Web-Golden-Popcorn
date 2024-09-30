@@ -89,6 +89,13 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
     // Fungsi untuk submit filter
     const submitFilters = (e) => {
         e.preventDefault();
+
+         // Validasi filter sebelum memanggil API
+        if (!selectedYear || !selectedGenre || !selectedCountry || !selectedAward) {
+            console.error('All filters must be selected');
+            return;
+        }
+
         const filters = {
             year: selectedYear,
             genre: selectedGenre,

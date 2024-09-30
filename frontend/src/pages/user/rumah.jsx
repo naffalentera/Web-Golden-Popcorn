@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import Filter from '../../components/Filter';
 import MovieGrid from '../../components/MovieGrid';
 
-const SearchPage = () => {
+const HomePage = () => {
   const [movies, setMovies] = useState([]);
-  const [sortedMovies, setSortedMovies] = useState([]); // State untuk film yang sudah diurutkan
-  const [sortBy, setSortBy] = useState('alphabetics-az');  // State untuk kriteria sorting
-  const location = useLocation();
-  const query = new URLSearchParams(location.search).get('query');
-  
-  const [resetFilters, setResetFilters] = useState(false); // State baru untuk reset filter
-  
-  // Fetch movies berdasarkan query pencarian
+  const [sortedMovies, setSortedMovies] = useState([]);
+  const [sortBy, setSortBy] = useState('alphabetics-az');
+  const [resetFilters, setResetFilters] = useState(false);
+
+  // Fetch semua data film tanpa query pencarian
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/movies?query=${query}`);
+        const res = await fetch('http://localhost:5000/api/movies/all');
         const data = await res.json();
         setMovies(data);
       } catch (err) {
@@ -26,13 +22,10 @@ const SearchPage = () => {
       }
     };
 
-    if (query) {
-      fetchMovies();
-      setResetFilters(true); // Set trigger reset filter saat query berubah
-    }
-  }, [query]);
+    fetchMovies();
+  }, []);
 
-  // Apply sorting
+  // Apply sorting ke seluruh film
   useEffect(() => {
     let sorted = [...movies];
 
@@ -58,10 +51,9 @@ const SearchPage = () => {
   const handleFilterChange = (filters) => {  
     const { genre, country, award, year } = filters;
 
-    console.log('Fetching filtered movies with:', { query, genre, country, award, year });
+    console.log('Fetching filtered movies with:', { genre, country, award, year });
 
-    // Fetch data yang difilter dari backend berdasarkan filter
-    fetch(`http://localhost:5000/api/movies?query=${query}&genre=${genre}&country=${country}&award=${award}&year=${year}`)
+    fetch(`http://localhost:5000/api/movies/?genre=${genre}&country=${country}&award=${award}&year=${year}`)
       .then(response => response.json())
       .then(data => {
         console.log('Filtered movies received:', data);
@@ -79,7 +71,7 @@ const SearchPage = () => {
         <Filter 
           onFilterChange={handleFilterChange} 
           resetFilters={resetFilters} 
-          onResetComplete={() => setResetFilters(false)} // Fungsi untuk memberitahu reset sudah selesai
+          onResetComplete={() => setResetFilters(false)} 
         />
         <div className="col-md-10 mt-3">
           <div className="d-flex justify-content-end gap-2 align-items-center mb-3">
@@ -92,16 +84,7 @@ const SearchPage = () => {
               <option value="year-desc">Year (Newest to Oldest)</option>
             </select>
           </div>
-          {query ? (
-            <>
-              <p className="mb-4 text-center">
-                Showing results for: <span className="text" style={{ color: '#E50914' }}>{query}</span>
-              </p>
-              <MovieGrid movies={sortedMovies} />
-            </>
-          ) : (
-            <p className="text-center">Please enter a keyword to search for movies.</p>
-          )}
+          <MovieGrid movies={sortedMovies} />
         </div>
       </main>
       <Footer />
@@ -109,5 +92,4 @@ const SearchPage = () => {
   );
 };
 
-
-export default SearchPage;
+export default HomePage;
