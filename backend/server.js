@@ -106,28 +106,24 @@ app.get('/api/awards', async (req, res) => {
 app.get('/api/movies/title/:title', async (req, res) => {
   const { title } = req.params;
   try {
-    const result = await pool.query(
-      `SELECT m.title, array_agg(g.name) AS genres
-       FROM movies m
-       JOIN movie_genres mg ON m.id_movie = mg.id_movie
-       JOIN genres g ON mg.id_genre = g.id_genre
-       WHERE m.title = $1
-       GROUP BY m.id_movie`,
-      [title]  // Menggunakan title dari parameter URL
-    );
-
-    console.log('Query Result:', result.rows);  // Tambahkan log untuk memeriksa hasil query
-
-    if (result.rows.length > 0) {
-      res.json(result.rows[0]);  // Mengembalikan film pertama yang ditemukan
-    } else {
-      res.status(404).json({ message: 'Movie not found' });  // Jika tidak ditemukan film
-    }
+      const result = await pool.query(
+        `SELECT movies.id_movie, movies.synopsis, movies.alt_title, movies.title, movies.year, movies.rating, 
+         array_agg(genres.name) as genres, movies.poster, movies.trailer
+         FROM movies
+         LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+         LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+         WHERE movies.title ILIKE $1 AND movies.status = 'approved'
+         GROUP BY movies.id_movie`, 
+        [title]
+      );
+      console.log(result.rows); // Cek apakah data yang dikembalikan benar
+      res.json(result.rows[0]); 
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+      console.error(err);
+      res.status(500).send('Server Error');
   }
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

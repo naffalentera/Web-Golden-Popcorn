@@ -11,7 +11,7 @@ import Footer from "../../components/Footer";
 
 function DetailPage() {
   const { title } = useParams();  // Mengambil title film dari URL
-  const [movie, setMovie] = useState(null);  
+  const [movies, setMovie] = useState(null);  
 
   useEffect(() => {
       const fetchMovieDetail = async () => {
@@ -41,9 +41,26 @@ function DetailPage() {
       fetchMovieDetail();
   }, [title]);
 
-  if (!movie) {
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) {
+      return '';  // Jika URL tidak ada, kembalikan string kosong
+    }
+    const videoId = url.split('v=')[1];
+    if (!videoId) {
+        return '';  // Kembalikan string kosong jika videoId tidak ditemukan
+    }
+    const ampersandPosition = videoId.indexOf('&');
+    if (ampersandPosition !== -1) {
+        return `https://www.youtube.com/embed/${videoId.substring(0, ampersandPosition)}`;
+    }
+    return `https://www.youtube.com/embed/${videoId}`;
+  };
+  
+  if (!movies) {
       return <div>Loading...</div>;  // Menampilkan loading sementara
   }
+
+  const genreList = movies.genres && movies.genres.length > 0 ? movies.genres.join(', ') : 'Genre tidak tersedia';
 
   const actors = [
     { name: "Actor 1", imageUrl: "/images/actor.jpg" },
@@ -75,7 +92,7 @@ function DetailPage() {
               <div
                 className="drama-image"
                 style={{
-                  backgroundImage: `url(${movie.poster})`,
+                  backgroundImage: `url(${movies.poster || '/images/default-movie.png'})`,  // Memperbaiki penggunaan template literal
                   height: "450px",
                   width: "250px",
                   backgroundSize: "cover",
@@ -85,30 +102,18 @@ function DetailPage() {
             </div>
             {/* Drama Details Section */}
             <div className="col-md-6" style={{ marginLeft: '50px' }}>
-              <h2 className="drama-title">{movie.title}</h2>
-              <p><strong>Other Titles:</strong> {movie.alt_title}</p>
-              <p><strong>Year:</strong> {movie.year}</p>
-              <p><strong>Synopsis:</strong> {movie.synopsis}</p>
-              <p><strong>Genre:</strong> 
-                <ul>
-                  {movie.genres && Array.isArray(movie.genres) ? (
-                    <ul>
-                      {movie.genres.map((genre, index) => (
-                        <li key={index}>{genre.name}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No genres available</p>
-                  )}
-                </ul>
-              </p>
+              <h2 className="drama-title">{movies.title}</h2>
+              <p><strong>Other Titles:</strong> {movies.alt_title}</p>
+              <p><strong>Year:</strong> {movies.year}</p>
+              <p><strong>Synopsis:</strong> {movies.synopsis}</p>
+              <p><strong>Genre:</strong> {genreList}</p>
               <p><strong>Rating:</strong> 9.5/10</p>
             </div>
           </div>
 
           {/* Subheading Actors */}
           <div className="mt-4">
-            <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Actors</h3>
+            <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Actors</h3>
           </div>
 
           {/* Actor Cards Section */}
@@ -122,24 +127,24 @@ function DetailPage() {
 
           {/* Subheading Youtube Trailer */}
           <div className="mt-4">
-            <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Trailer</h3>
+            <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Trailer</h3>
           </div>
 
           {/* Video Placeholder Section */}
           <div className="fullscreen-video mt-4">
-            <iframe
-              className="w-100 h-100"
-              src={`https://www.youtube.com/embed/${movie.trailer}`} // Pastikan trailer adalah id video YouTube
-              allowFullScreen
-              title="YouTube Video"
-            ></iframe>
+          <iframe
+            className="w-100 h-100"
+            src={getYoutubeEmbedUrl(movies.trailer)}  // Pastikan trailer diubah menjadi format embed
+            allowFullScreen
+            title="YouTube Video"
+          ></iframe>
           </div>
 
           {/* Review Section */}
           <div className="mt-4">
             <div className="row justify-content-between">
               <div className="col-6 d-flex align-items-center">
-                <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>People think about this</h3>
+                <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>People think about this</h3>
               </div>
               <div className="col-6 d-flex justify-content-end align-items-center">
                 <StarDropdown />
