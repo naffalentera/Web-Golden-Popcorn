@@ -16,26 +16,55 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// API endpoint untuk mendapatkan film berdasarkan query
-app.get('/api/movies', async (req, res) => {
-  const { query } = req.query;
-  try {
-    const searchQuery = `%${query}%`;
-    const result = await pool.query(`
-      SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, movies.poster, movies.trailer
-      FROM movies
-      LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
-      LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
-      WHERE movies.title ILIKE $1 AND movies.status = 'approved'
-      GROUP BY movies.id_movie;
-    `, [searchQuery]);
+const getFilterValue = (param) => param && param !== 'all' ? param : '%';
 
+const buildMoviesQuery = (searchQuery, genreFilter, countryFilter, awardFilter, yearFilter) => `
+  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, countries.name as country, movies.poster, movies.trailer
+  FROM movies
+  LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+  LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+  LEFT JOIN countries ON movies.id_country = countries.id_country
+  LEFT JOIN movie_awards ON movies.id_movie = movie_awards.id_movie
+  LEFT JOIN awards ON movie_awards.id_award = awards.id_award
+  WHERE movies.title ILIKE $1
+  AND ($2::text = '%' OR genres.name ILIKE $2)
+  AND ($3::text = '%' OR countries.name ILIKE $3)
+  AND ($4::text = '%' OR awards.name ILIKE $4)
+  AND ($5::text = '%' OR movies.year::text = $5)
+  AND movies.status = 'approved'
+  GROUP BY movies.id_movie, countries.name;
+`;
+
+const handleMoviesRequest = async (req, res, isSearch = false) => {
+  const { query, genre, country, award, year } = req.query;
+
+  try {
+    const searchQuery = isSearch && query ? `%${query}%` : '%';
+    const genreFilter = getFilterValue(genre);
+    const countryFilter = getFilterValue(country);
+    const awardFilter = getFilterValue(award);
+    const yearFilter = getFilterValue(year);
+
+    console.log('Filters applied in SQL:', { searchQuery, genreFilter, countryFilter, awardFilter, yearFilter });
+
+    const sqlQuery = buildMoviesQuery(searchQuery, genreFilter, countryFilter, awardFilter, yearFilter);
+
+    const result = await pool.query(sqlQuery, [searchQuery, genreFilter, countryFilter, awardFilter, yearFilter]);
+
+    console.log('Movies fetched:', result.rows);
     res.json(result.rows);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error fetching movies:', err);
     res.status(500).send('Server Error');
   }
-});
+};
+
+// API endpoint untuk mendapatkan semua film dengan filter (untuk homepage)
+app.get('/api/movies/all', (req, res) => handleMoviesRequest(req, res, false));
+
+// API endpoint untuk mendapatkan film berdasarkan query di search page
+app.get('/api/movies', (req, res) => handleMoviesRequest(req, res, true));
+
 
 app.get('/api/genres', async (req, res) => {
   try {
@@ -106,8 +135,18 @@ app.get('/api/awards', async (req, res) => {
 app.get('/api/movies/title/:title', async (req, res) => {
   const { title } = req.params;
   try {
-      const result = await pool.query('SELECT * FROM movies WHERE title = $1', [title]);
-      res.json(result.rows[0]); // Mengembalikan film pertama yang ditemukan
+      const result = await pool.query(
+        `SELECT movies.id_movie, movies.synopsis, movies.alt_title, movies.title, movies.year, movies.rating, 
+         array_agg(genres.name) as genres, movies.poster, movies.trailer
+         FROM movies
+         LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+         LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+         WHERE movies.title ILIKE $1 AND movies.status = 'approved'
+         GROUP BY movies.id_movie`, 
+        [title]
+      );
+      console.log(result.rows); // Cek apakah data yang dikembalikan benar
+      res.json(result.rows[0]); 
   } catch (err) {
       console.error(err);
       res.status(500).send('Server Error');
