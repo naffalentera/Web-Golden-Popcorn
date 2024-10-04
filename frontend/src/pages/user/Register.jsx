@@ -23,29 +23,45 @@ function RegisterPage() {
       return;
     }
 
+    // Email validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    // Password validation (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character)
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$/;
+    if (!passwordPattern.test(password)) {
+      setErrorMessage(
+        'Password must be at least 8 characters long, contain uppercase letter, lowercase letter, number, and special character.'
+      );
+      return;
+    }
+
     // Clear any previous error message
     setErrorMessage('');
 
     // Send register request to server
-    fetch('/api/register', {
+    fetch('http://localhost:5000/api/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username, email, password }),
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        window.location.href = '/email-confirmation'; // Redirect on successful registration
-      } else {
-        setErrorMessage(data.message); // Set error message from server
-      }
-    })
-    .catch(error => {
-      setErrorMessage('An error occurred during registration. Please try again.');
-      console.error('Error:', error);
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          window.location.href = '/email-confirmation'; // Redirect on successful registration
+        } else {
+          setErrorMessage(data.message); // Set error message from server
+        }
+      })
+      .catch((error) => {
+        setErrorMessage('An error occurred during registration. Please try again.');
+        console.error('Error:', error);
+      });
   };
 
   return (
@@ -102,14 +118,9 @@ function RegisterPage() {
               {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>} {/* Error message below password */}
 
               <Button text="Sign Up" className="btn btn-golden w-100 rounded-pill mb-3" />
-              <div className="text-center text-white mb-3">OR</div>
-              <Button className="btn btn-light w-100 rounded-pill mb-2 d-flex align-items-center justify-content-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google" style={{ width: '20px' }} className="me-2" />
-                Sign up with Google
-              </Button>
             </form>
             <div id="toggle-container" className="text-center mt-4">
-              <p id="toggle-text" className="text-white">Already have an account? <a href="/login"><strong>Log In</strong></a></p>
+              <p id="toggle-text" className="text-white">Already have an account? <a href="/login"> <strong>Log In</strong></a></p>
             </div>
           </div>
         </div>

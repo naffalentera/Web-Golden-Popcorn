@@ -92,7 +92,7 @@ function DetailPage() {
               <div
                 className="drama-image"
                 style={{
-                  backgroundImage: `url(${movies.poster || '/images/default-movie.png'})`,  // Memperbaiki penggunaan template literal
+                  backgroundImage: `url(${movies.poster || "/images/default-movie.png"})`,  // Memperbaiki penggunaan template literal
                   height: "450px",
                   width: "250px",
                   backgroundSize: "cover",

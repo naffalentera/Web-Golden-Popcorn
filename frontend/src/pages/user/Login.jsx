@@ -31,15 +31,15 @@ function LoginPage() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ email, password }), // Kirim email dan password
     })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        localStorage.setItem('token', data.token); // Save JWT token
-        window.location.href = '/home'; // Redirect on successful login
+        localStorage.setItem('token', data.token); // Simpan token JWT
+        window.location.href = '/home'; // Redirect setelah login berhasil
       } else {
-        setErrorMessage(data.message); // Set error message from server
+        setErrorMessage(data.message); // Set pesan error dari server
       }
     })
     .catch(error => {

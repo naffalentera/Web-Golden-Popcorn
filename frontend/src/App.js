@@ -39,6 +39,7 @@ function App() {
 
 
         <Route path="/email-confirmation" element={<EmailConfirmationPage />} />
+        <Route path="/verify-email" element={<EmailConfirmationPage />} />
         <Route path="/password-reset" element={<PasswordResetPage />} />
         <Route path="/new-password" element={<NewPasswordPage />} />
         
