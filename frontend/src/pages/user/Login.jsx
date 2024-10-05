@@ -3,51 +3,69 @@ import InputField from '../../components/InputField';
 import Button from '../../components/Button';
 
 function LoginPage() {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // State for error message
+    const [errorMessage, setErrorMessage] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false); 
 
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    };
+  
+    const handleLogin = (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+
+      // Basic validation
+      if (!username || !password) {
+          setErrorMessage('All fields are required!');
+          return;
+        } 
+      
+      // Password validation (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character)
+      const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$/;
+      if (!passwordPattern.test(password)) {
+        setErrorMessage(
+        'Password must be at least 8 characters long, contain uppercase letter, lowercase letter, number, and special character.'
+        );
+        return;
+        }
+
+      // Clear any previous error message
+      setErrorMessage('');
+  
+      fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            localStorage.setItem('token', data.token); // Simpan JWT token
+            if (data.role === 'admin') {
+                window.location.href ='http://localhost:3000/dashboard'; // Redirect ke dashboard admin
+              } else {
+                localStorage.setItem('UserToken', data.token);
+                window.location.href ='http://localhost:3000/home?token=${token}'; // Redirect ke halaman home untuk user biasa
+              }
+          } else {
+            setErrorMessage(data.message); // Tampilkan pesan error jika login gagal
+          }
+        })
+        .catch((error) => {
+          setErrorMessage('An error occurred. Please try again.');
+          console.error('Error during login:', error);
+        });
+    };
+
+    const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:5000/auth/google'; // Arahkan ke rute Google OAuth di backend
   };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    // Basic validation
-    if (!username || !password) {
-      setErrorMessage('Username and password are required!');
-      return;
-    }
-
-    // Clear any previous error message
-    setErrorMessage('');
-
-    // Send login request to server
-    fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }), // Kirim email dan password
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        localStorage.setItem('token', data.token); // Simpan token JWT
-        window.location.href = '/home'; // Redirect setelah login berhasil
-      } else {
-        setErrorMessage(data.message); // Set pesan error dari server
-      }
-    })
-    .catch(error => {
-      setErrorMessage('An error occurred while logging in. Please try again.');
-      console.error('Error:', error);
-    });
-  };
-
+  
   return (
     <div className="login-page" style={{ position: 'relative', height: '100vh', overflow: 'hidden' }}>
       {/* Background Image */}
@@ -68,24 +86,15 @@ function LoginPage() {
       
       {/* Overlay for the form */}
       <div className="overlay container-fluid vh-100 d-flex align-items-center justify-content-center">
-        <div 
-          className="row shadow-lg rounded p-5" 
-          style={{ 
-            maxWidth: '500px', 
-            width: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.7)', 
-          }}
-        >
-          <div className="col-12">
-            <form id="log-in-form" onSubmit={handleSubmit}>
-              <h1 className="mb-4 text-white" style={{ fontWeight: 'bold', fontSize: '3rem' }}>Log In</h1> {/* Bold title */}
-              
-              {/* Username Field */}
-              <div className="mb-3"> {/* Added margin-bottom for spacing */}
+        <div className="row shadow-lg rounded p-5" style={{ maxWidth: '500px', width: '100%', backgroundColor: 'rgba(0, 0, 0, 0.7)' }}>
+            <div className="col-12">
+            <form id="log-in-form" onSubmit={handleLogin}>
+              <h1 className="mb-4 text-white" style={{ fontWeight: 'bold', fontSize: '3rem' }}>Log In</h1>
+              <div className="mb-3"> 
                 <InputField label="Username" type="text" id="username" placeholder="Username" />
               </div>
               
-              <div className="mb-4 position-relative"> {/* Added position-relative for icon positioning */}
+              <div className="mb-4 position-relative">
                 <InputField
                   label="Password"
                   type={passwordVisible ? "text" : "password"}
@@ -115,17 +124,17 @@ function LoginPage() {
               </div>
               
               {/* Log In Button */}
-              <Button text="Log In" className="btn btn-golden w-100 rounded-pill mb-3" />
+              <Button text="Log In" className="btn btn-golden w-100 rounded-pill mb-3"/>
+            </form>
+
               <div className="text-center text-white mb-3">OR</div>
               {/* Social Media Buttons */}
-              <Button className="btn btn-light w-100 rounded-pill mb-2 d-flex align-items-center justify-content-center">
+              <Button className="btn btn-light w-100 rounded-pill mb-2 d-flex align-items-center justify-content-center" onClick={handleGoogleLogin} >
                 <img src="/images/google_logo.png" alt="Google" style={{ width: '20px' }} className="me-2" />
                 Log in with Google
               </Button> 
-            </form>
-            <div id="toggle-container" className="text-center mt-4">
-              <p id="toggle-text" className="text-white">
-                Don't have an account? <a href="/register"><strong>Register</strong></a>
+                <div id="toggle-container" className="text-center mt-4">
+              <p id="toggle-text" className="text-white">Don't have an account? <a href="/register"><strong>Register</strong></a>
               </p>
             </div>
           </div>

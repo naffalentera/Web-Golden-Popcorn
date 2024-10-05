@@ -3,12 +3,28 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import Filter from '../../components/Filter';
 import MovieGrid from '../../components/MovieGrid';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [movies, setMovies] = useState([]);
   const [sortedMovies, setSortedMovies] = useState([]);
   const [sortBy, setSortBy] = useState('alphabetics-az');
   const [resetFilters, setResetFilters] = useState(false);
+
+  useEffect(() => {
+    // Dapatkan token dari query parameter di URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+
+    if (token) {
+      // Simpan token di localStorage
+      localStorage.setItem('UserToken', token);
+
+      // Setelah menyimpan token, hilangkan query parameter dari URL
+      window.location.href = 'http://localhost:3000/home'; // Redirect tanpa query parameters
+    }
+  }, [navigate]);
 
   // Fetch semua data film tanpa query pencarian
   useEffect(() => {

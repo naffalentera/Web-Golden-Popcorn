@@ -22,6 +22,12 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
+
+// Register ---------------------------------------------------------------------------------------------------------------------//
 // Function to send email
 const sendVerificationEmail = (user, token) => {
   const transporter = nodemailer.createTransport({
@@ -127,9 +133,117 @@ app.get('/api/verify-email', async (req, res) => {
   }
 });
 
+// Log in ------------------------------------------------------------------------------------------------------------------------------------------------------- //
+app.post('/api/login', async (req, res) => {
+  console.log(req.body);
+  const { username, password } = req.body;
+
+  // Validasi request
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Username and password are required.' });
+  }
+
+  try {
+    // Cari pengguna berdasarkan username
+    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    const user = result.rows[0];
+
+    // Cek apakah password cocok dengan hashed password di database
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    // Buat JWT token jika login berhasil
+    const token = jwt.sign({ id: user.id_user, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Kirim token dan role pengguna ke frontend
+    res.json({ success: true, token, role: user.role });
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Login Google ----------------------------------------------------------------------------------------------------------------------------------------------------- //
+app.use(session({
+  secret: 'my_super_secret_key', 
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Google OAuth strategy configuration
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID, // Client ID dari Google
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET, // Client Secret dari Google
+  callbackURL: 'http://localhost:5000/auth/google/callback' // URL yang akan digunakan setelah login berhasil
+},
+async (token, tokenSecret, profile, done) => {
+  try {
+    // Lihat apakah pengguna sudah ada di database berdasarkan Google ID
+    const result = await pool.query('SELECT * FROM users WHERE oauth_uid = $1', [profile.id]);
+
+    if (result.rows.length > 0) {
+      // Jika pengguna sudah ada, lanjutkan login
+      return done(null, result.rows[0]);
+    } else {
+      // Jika pengguna belum ada, simpan ke database
+      const newUser = await pool.query(
+        `INSERT INTO users (username, email, oauth_provider, oauth_uid, is_email_verified)
+        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [profile.displayName, profile.emails[0].value, 'google', profile.id, true]
+      );
+
+      // Setelah berhasil menyimpan, lanjutkan login
+      return done(null, newUser.rows[0]);
+    }
+  } catch (error) {
+    return done(error, null);
+  }
+}));
+
+// Passport session setup
+passport.serializeUser((user, done) => {
+  done(null, user.id_user);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE id_user = $1', [id]);
+    done(null, result.rows[0]);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+// Memulai proses login dengan Google
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+// Menangani callback setelah login Google berhasil
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    const { id_user, role } = req.user;
+
+    // Buat JWT token dengan payload yang berisi id_user dan role
+    const token = jwt.sign({ id: id_user, role: role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.redirect(`http://localhost:3000/home?token=${token}`);
+  }
+);
 
 
-
+// ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 // Handle filter
 const getFilterValue = (param) => param && param !== 'all' ? param : '%';
 

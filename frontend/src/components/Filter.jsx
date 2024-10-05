@@ -107,7 +107,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
     };   
 
     const handleAddMovieClick = () => {
-        const token = localStorage.getItem('userToken');
+        const token = localStorage.getItem('UserToken');
 
         if (!token) {
             navigate('/login');
