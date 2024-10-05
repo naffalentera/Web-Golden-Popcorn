@@ -20,6 +20,7 @@ import AwardsPage from './pages/admin/Awards';
 import GenresPage from './pages/admin/Genres';
 import UsersPage from './pages/admin/Users';
 import ActorPage from './pages/admin/Actor';
+import CommentPage from './pages/admin/Comments';
 
 import "./styles/detail.css";
 
@@ -53,6 +54,7 @@ function App() {
         <Route path="/genres" element={<GenresPage />} />
         <Route path="/users" element={<UsersPage />} />
         <Route path="/actor" element={<ActorPage />} />
+        <Route path="/comment" element={<CommentPage />} />
 
       </Routes>
     </Router>
