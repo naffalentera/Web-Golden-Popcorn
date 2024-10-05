@@ -153,10 +153,10 @@ body {
 }
 
 .actor-card p {
-  font-size: 1rem;
+  font-size:20px ;
   color: white;
   font-family: 'Plus Jakarta Sans';
-  margin: 0;
+  margin-top: 10px;
   font-weight: bold;
 }
 
