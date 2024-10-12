@@ -11,6 +11,7 @@ const Header = () => {
   // Gunakan useEffect untuk memeriksa status login saat komponen pertama kali dimuat
   useEffect(() => {
     const token = localStorage.getItem('UserToken');
+    console.log('Token received', token);
     setIsLoggedIn(!!token); // Set isLoggedIn menjadi true jika token ada, false jika tidak
   }, []);
 
@@ -46,6 +47,7 @@ const Header = () => {
   const handleLogoutClick = () => {
     // Log out the user by clearing the token and navigating to home or login page
     localStorage.removeItem('UserToken');
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
     navigate('/home');
   };

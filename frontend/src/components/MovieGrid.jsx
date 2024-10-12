@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const MovieGrid = ({ movies }) => {
-    useEffect(() => {
-        console.log('Movies state updated:', movies);  // Log setiap kali movies diupdate
-    }, [movies]);
+    // useEffect(() => {
+    //     console.log('Movies state updated:', movies);  // Log setiap kali movies diupdate
+    // }, [movies]);
 
     const navigate = useNavigate();
 

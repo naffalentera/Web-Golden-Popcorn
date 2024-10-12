@@ -135,7 +135,6 @@ app.get('/api/verify-email', async (req, res) => {
 
 // Log in ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 app.post('/api/login', async (req, res) => {
-  console.log(req.body);
   const { username, password } = req.body;
 
   // Validasi request
@@ -242,6 +241,96 @@ app.get('/auth/google/callback',
   }
 );
 
+// Forget password ------------------------------------------------------------------------------------------------------------------------------------------------------- //
+app.post('/api/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if (user.rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'Email not found' });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Save token to database
+    await pool.query('UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE email = $3', 
+      [resetPasswordToken, resetPasswordExpires, email]);
+
+    // Send email with reset link
+    const resetURL = `http://localhost:3000/reset-password?token=${resetToken}&email=${email}`;
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. 
+                     Please click on the following link, or paste this into your browser to complete the process: ${resetURL}`;
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+        
+      },
+    });
+
+
+    await transporter.sendMail({
+      from:{
+        name: 'Golden Popcorn',
+        address: process.env.EMAIL_USER,
+      }, 
+      to: email,
+      subject: 'Password Reset',
+      text: message,
+    });
+
+    res.json({ success: true, message: 'Reset link sent' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+app.get('/api/reset-password', (req, res) => {
+  // Render or send the reset password page to the user
+  res.redirect(`http://localhost:3000/reset-password`);
+});
+
+app.post('/api/reset-password', async (req, res) => {
+  const { token, email, newPassword } = req.body;
+
+  try {
+    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    if (user.rows.length === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid email' });
+    }
+
+    // Hash token and check if it matches the one in the database
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const UserToken = user.rows[0].reset_password_token;
+    const tokenExpiry = new Date(user.rows[0].reset_password_expires);
+
+    if (UserToken !== hashedToken || tokenExpiry < new Date()) {
+      return res.status(400).json({ success: false, message: 'Token is invalid or has expired' });
+    }
+
+    // Hash new password and save it
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await pool.query('UPDATE users SET password = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE email = $2', 
+      [hashedPassword, email]);
+
+    res.json({ success: true, message: 'Password reset successful' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 // Handle filter
@@ -274,13 +363,13 @@ const handleMoviesRequest = async (req, res, isSearch = false) => {
     const awardFilter = getFilterValue(award);
     const yearFilter = getFilterValue(year);
 
-    console.log('Filters applied in SQL:', { searchQuery, genreFilter, countryFilter, awardFilter, yearFilter });
+    // console.log('Filters applied in SQL:', { searchQuery, genreFilter, countryFilter, awardFilter, yearFilter });
 
     const sqlQuery = buildMoviesQuery(searchQuery, genreFilter, countryFilter, awardFilter, yearFilter);
 
     const result = await pool.query(sqlQuery, [searchQuery, genreFilter, countryFilter, awardFilter, yearFilter]);
 
-    console.log('Movies fetched:', result.rows);
+    // console.log('Movies fetched:', result.rows);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching movies:', err);
@@ -374,7 +463,6 @@ app.get('/api/movies/title/:title', async (req, res) => {
          GROUP BY movies.id_movie`, 
         [title]
       );
-      console.log(result.rows); // Cek apakah data yang dikembalikan benar
       res.json(result.rows[0]); 
   } catch (err) {
       console.error(err);

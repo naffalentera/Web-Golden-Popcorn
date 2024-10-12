@@ -17,6 +17,7 @@ const HomePage = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
 
+
     if (token) {
       // Simpan token di localStorage
       localStorage.setItem('UserToken', token);
@@ -67,12 +68,9 @@ const HomePage = () => {
   const handleFilterChange = (filters) => {  
     const { genre, country, award, year } = filters;
 
-    console.log('Fetching filtered movies with:', { genre, country, award, year });
-
     fetch(`http://localhost:5000/api/movies/?genre=${genre}&country=${country}&award=${award}&year=${year}`)
       .then(response => response.json())
       .then(data => {
-        console.log('Filtered movies received:', data);
         setMovies(data);  // Update state movies dengan hasil yang difilter
       })
       .catch(error => {

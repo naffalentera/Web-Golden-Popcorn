@@ -120,7 +120,7 @@ function LoginPage() {
               {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>} {/* Error message below password */}
 
               <div className="d-flex justify-content-between mb-3">
-                <a href="/password-reset" className='text-white'>Forgot password?</a>
+                <a href="/forget-password" className='text-white'>Forgot password?</a>
               </div>
               
               {/* Log In Button */}
