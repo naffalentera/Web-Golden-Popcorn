@@ -57,15 +57,15 @@ app.get('/api/countries', async (req, res) => {
   }
 });
 
-app.get('/api/awards', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT name FROM awards ORDER BY name');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+//app.get('/api/awards', async (req, res) => {
+//  try {
+//    const result = await pool.query('SELECT name FROM awards ORDER BY name');
+//    res.json(result.rows);
+//  } catch (err) {
+//    console.error(err.message);
+//    res.status(500).send('Server Error');
+//  }
+//});
 
 // app.post('/api/watchlist', authenticateToken, (req, res) => {
 //   const { movieId } = req.body;
@@ -106,28 +106,30 @@ app.get('/api/awards', async (req, res) => {
 app.get('/api/movies/title/:title', async (req, res) => {
   const { title } = req.params;
   try {
-      const result = await pool.query(
-        `SELECT movies.id_movie, movies.synopsis, movies.alt_title, movies.title, movies.year, movies.rating, 
-         array_agg(genres.name) as genres, movies.poster, movies.trailer
-         FROM movies
-         LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
-         LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
-         WHERE movies.title ILIKE $1 AND movies.status = 'approved'
-         GROUP BY movies.id_movie`, 
-        [title]
-      );
+    const result = await pool.query(
+      `SELECT movies.id_movie, movies.synopsis, movies.alt_title, movies.title, movies.year, movies.rating, 
+       array_agg(DISTINCT genres.name) as genres, movies.poster, movies.trailer, array_agg(DISTINCT countries.name) as countries
+       FROM movies
+       LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+       LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+       LEFT JOIN movie_countries ON movies.id_movie = movie_countries.id_movie
+       LEFT JOIN countries ON movie_countries.id_country = countries.id_country
+       WHERE movies.title ILIKE $1 AND movies.status = 'approved'
+       GROUP BY movies.id_movie`,
+      [title]
+    );
 
-
-      if (result.rows.length > 0) {
-          res.json(result.rows[0]);  // Jika ada film yang ditemukan, kirimkan hasilnya
-      } else {
-          res.status(404).json({ message: 'Film tidak ditemukan' });  // Jika tidak ada film, kirimkan 404
-      }
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Film tidak ditemukan' });
+    }
   } catch (err) {
-      console.error(err);
-      res.status(500).send('Server Error');
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
+
 
 app.get('/api/movies/:id_movie/actors', async (req, res) => {
   const { id_movie } = req.params;

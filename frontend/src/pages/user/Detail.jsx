@@ -25,6 +25,8 @@ function DetailPage() {
 
             const data = await response.json();  // Langsung ambil data sebagai JSON
 
+            console.log('Movie Data:', data);
+
             // Validasi data sebelum set state
             if (data && data.title) {
                 setMovie(data);  // Simpan data ke state
@@ -61,7 +63,9 @@ const getYoutubeEmbedUrl = (url) => {
       return <div>Loading...</div>;  // Menampilkan loading sementara
   }
 
-  const genreList = movies.genres && movies.genres.length > 0 ? movies.genres.join(', ') : 'Genre ga ada';
+const genreList = movies.genres && movies.genres.length > 0 ? movies.genres.join(', ') : 'Tidak ada genre';
+const countryList = movies.countries && movies.countries.length > 0 ? movies.countries.join(', ') : 'Tidak ada country';
+
 
   return (
     <div>
@@ -99,12 +103,13 @@ const getYoutubeEmbedUrl = (url) => {
               <p><strong>Year:</strong> {movies.year}</p>
               <p><strong>Synopsis:</strong> {movies.synopsis}</p>
               <p><strong>Genre:</strong> {genreList}</p>
-              <p><strong>Rating:</strong> 9.5/10</p>
+              <p><strong>Country:</strong> {countryList}</p>
+              <p><strong>Rating:</strong> {movies.rating}</p>
             </div>
           </div>
 
           {/* Subheading Actors */}
-          <div className="mt-4">
+          <div className="mt-4">x
             <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Actors</h3>
           </div>
 
