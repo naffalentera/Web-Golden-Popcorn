@@ -414,20 +414,65 @@ app.get('/api/awards', async (req, res) => {
   }
 });
 
-// app.post('/api/watchlist', authenticateToken, (req, res) => {
-//   const { movieId } = req.body;
-//   const userId = req.user.id; // ID pengguna dari token yang terautentikasi
+// ------------------------------------------------------------------------------------------------------------------------------------------------------- //
+// Watchlist
 
-//   const query = 'INSERT INTO watchlist (id_user, id_movie) VALUES ($1, $2)';
+// Middleware untuk memverifikasi token
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];  // Ambil header Authorization
+  const token = authHeader && authHeader.split(' ')[1];  // Ekstrak token dari header
 
-//   db.query(query, [userId, movieId], (error, results) => {
-//       if (error) {
-//           console.error('Error inserting into watchlist:', error);
-//           return res.status(500).json({ message: 'Error adding movie to watchlist' });
-//       }
-//       res.status(200).json({ message: 'Movie added to watchlist' });
-//   });
-// });
+  console.log('Authorization Header:', authHeader);
+  console.log('Extracted Token:', token);
+
+  if (token == null) return res.status(401).json({ message: 'Token is missing' });  // Jika tidak ada token, kirim Unauthorized
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Token is invalid' });  // Jika token tidak valid, kirim Forbidden
+    
+    req.user = user;  // Simpan informasi user di request object
+    next();  // Lanjutkan ke middleware berikutnya atau ke route handler
+  });
+}
+
+app.post('/api/watchlist', authenticateToken, (req, res) => {
+  const { movieId } = req.body;
+  const userId = req.user.id; // ID pengguna dari token yang terautentikasi
+
+  const query = 'INSERT INTO watchlist (id_user, id_movie) VALUES ($1, $2) ON CONFLICT DO NOTHING;';
+
+  pool.query(query, [userId, movieId], (error, results) => {
+      if (error) {
+          console.error('Error inserting into watchlist:', error);
+          return res.status(500).json({ message: 'Error adding movie to watchlist' });
+      }
+      return res.status(200).json({ message: 'Movie added to watchlist' });
+  });
+});
+
+// API untuk mendapatkan watchlist berdasarkan id_user
+app.get('/api/watchlist', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const query = `
+      SELECT movies.*
+      FROM watchlist
+      INNER JOIN movies ON watchlist.id_movie = movies.id_movie
+      WHERE watchlist.id_user = $1;
+    `;
+    const { rows } = await pool.query(query, [userId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Watchlist is empty.' });
+    }
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 
 // app.post('/api/movies/add', authenticateToken, (req, res) => {

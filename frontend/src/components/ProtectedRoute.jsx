@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, roleRequired }) => {
     const token = localStorage.getItem('token') || localStorage.getItem('UserToken'); // Ambil token dari localStorage
-    console.log('Token received', token);
+    // console.log('Token received', token);
   
     if (!token) {
       // Jika tidak ada token, arahkan ke halaman login
