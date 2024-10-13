@@ -1,28 +1,4 @@
-// ReviewList.jsx
-import React from "react";
-
-const reviews = [
-  {
-    name: "Alice",
-    stars: 5,
-    text: "This drama was amazing! Highly recommended.",
-  },
-  {
-    name: "Bob",
-    stars: 5,
-    text: "Fantastic storyline!",
-  },
-  {
-    name: "Charlie",
-    stars: 4,
-    text: "Almost perfect, just a few things missing.",
-  },
-  {
-    name: "Dave",
-    stars: 1,
-    text: "Bad film!",
-  },
-];
+import React, { useState, useEffect } from 'react';
 
 const renderStars = (count) => {
   return Array.from({ length: 5 }, (_, index) => (
@@ -32,22 +8,38 @@ const renderStars = (count) => {
   ));
 };
 
-function ReviewList() {
+const ReviewList = ({ id_movie }) => {
+  const [reviews, setReviews] = useState([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const response = await fetch(`http://localhost:5000/api/movies/${id_movie}/comments`);
+      const data = await response.json();
+      setReviews(data);
+    };    
+
+    fetchReviews();
+  }, [id_movie]);
+
   return (
     <div className="mt-4">
       <ul className="list-unstyled">
-        {reviews.map((review, index) => (
-          <li key={index} className="rating mb-3">
-            <div className="d-flex align-items-center">
-              <span className="review-author me-2"><strong>{review.name}</strong>:</span>
-              <span className="review-stars">{renderStars(review.stars)}</span>
-            </div>
-            <p>{review.text}</p>
-          </li>
-        ))}
+        {reviews.length > 0 ? (
+          reviews.map((reviews, index) => (
+            <li key={index} className="rating mb-3">
+              <div className="d-flex align-items-center">
+                <span className="review-author me-2"><strong>{reviews.username}</strong>:</span>
+                <span className="review-stars">{renderStars(reviews.rate)}</span>
+              </div>
+              <p>{reviews.comment}</p>
+            </li>
+          ))
+        ) : (
+          <p>No reviews yet. Be the first to comment!</p>
+        )}
       </ul>
     </div>
   );
-}
+};
 
 export default ReviewList;

@@ -508,13 +508,101 @@ app.get('/api/movies/title/:title', async (req, res) => {
          GROUP BY movies.id_movie`, 
         [title]
       );
-      res.json(result.rows[0]); 
+
+
+      if (result.rows.length > 0) {
+          res.json(result.rows[0]);  // Jika ada film yang ditemukan, kirimkan hasilnya
+      } else {
+          res.status(404).json({ message: 'Film tidak ditemukan' });  // Jika tidak ada film, kirimkan 404
+      }
   } catch (err) {
       console.error(err);
       res.status(500).send('Server Error');
   }
 });
 
+app.get('/api/movies/:id_movie/actors', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT actors.name, actors.photo
+       FROM actors
+       JOIN movie_actors ON actors.id_actor = movie_actors.id_actor
+       WHERE movie_actors.id_movie = $1`, [id_movie]
+    );
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Endpoint untuk menambah komentar
+app.post('/api/comments', async (req, res) => {
+  const { comment, rate, id_movie } = req.body;
+
+  // Dummy data: User Alice digunakan sebagai pengguna yang memberikan komentar
+  const dummyUsername = 'alice';
+
+  try {
+    // Cari ID user berdasarkan username
+    const userResult = await pool.query('SELECT id_user FROM users WHERE username = $1', [dummyUsername]);
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const id_user = userResult.rows[0].id_user;
+
+    // Simpan komentar di database
+    const insertCommentQuery = `
+      INSERT INTO comments (comment, rate, id_movie, id_user, status)
+      VALUES ($1, $2, $3, $4, 'approved')
+      RETURNING *;
+    `;
+    const result = await pool.query(insertCommentQuery, [comment, rate, id_movie, id_user]);
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error adding comment:', err.message);
+    res.status(500).json({ message: 'Error adding comment' });
+  }
+});
+
+// Endpoint untuk mengambil komentar berdasarkan film
+app.get('/api/movies/:id_movie/comments', async (req, res) => {
+  const { id_movie } = req.params;
+
+  try {
+    const result = await pool.query(`
+      SELECT comments.comment, comments.rate, users.username
+      FROM comments
+      JOIN users ON comments.id_user = users.id_user
+      WHERE comments.id_movie = $1 AND comments.status = 'approved'
+    `, [id_movie]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching comments:', err.message);
+    res.status(500).json({ message: 'Error fetching comments' });
+  }
+});
+
+//endpoint untuk data admin
+app.get('/api/admins', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id_user, username, email, role 
+       FROM users 
+       WHERE role = 'admin'`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch admin users' });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

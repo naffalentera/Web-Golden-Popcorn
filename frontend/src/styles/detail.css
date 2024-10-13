@@ -153,10 +153,10 @@ body {
 }
 
 .actor-card p {
-  font-size: 1rem;
+  font-size:20px ;
   color: white;
   font-family: 'Plus Jakarta Sans';
-  margin: 0;
+  margin-top: 10px;
   font-weight: bold;
 }
 
@@ -267,4 +267,41 @@ table-box {
   display: flex;
   flex-direction: column;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Personal Information Card */
+.card-admin {
+  border: 2px solid #333333;
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.1), 0px 8px 16px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+  padding: 20px;
+  margin-bottom: 20px;
+  color: #ffffff; /* Text color white */
+  width: 600px;
+  height: 500px;
+}
+
+.card-admin h3 {
+  color: #C6A628; /* Golden color for headings */
+  font-size: 25px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.info-label {
+  font-weight: lighter;
+  color: #ffffff;
+  font-size: 18px;
+  padding: 10px;
+  margin: 5px;
+}
+
+.info-value {
+  font-size: 18px;
+  color: #FFFFFF;
+  padding: 10px;
+  background-color: #25232392;
+  border: #666;
+  border-radius: 10px;
+  margin: 5px;
 }
