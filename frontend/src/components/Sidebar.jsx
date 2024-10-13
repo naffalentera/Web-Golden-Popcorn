@@ -1,7 +1,16 @@
 import React, {  useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Sidebar() {
   const [activePage, setActivePage] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate(); 
+
+  // Gunakan useEffect untuk memeriksa status login saat komponen pertama kali dimuat
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token); // Set isLoggedIn menjadi true jika token ada, false jika tidak
+  }, []);
 
   useEffect(() => {
     // Set the active page based on the current URL
@@ -10,6 +19,22 @@ function Sidebar() {
 
   const handleMenuClick = (page) => {
     setActivePage(page);
+  };
+
+  const handleLogoutConfirm = () => {
+    // Tampilkan kotak dialog konfirmasi
+    const confirmed = window.confirm('Are you sure you want to logout?');
+  
+    if (confirmed) {
+      // Jika pengguna mengonfirmasi, jalankan handleLogoutClick
+      handleLogoutClick();
+    }
+  };
+
+  const handleLogoutClick = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    navigate('/login');
   };
 
   return (
@@ -57,7 +82,7 @@ function Sidebar() {
           <a className="nav-link" href="/users">Users</a>
         </li>
         <li className="nav-item">
-          <a className="nav-link" href="/logout">Logout</a>
+          <a className="nav-link" onClick={handleLogoutConfirm}>Logout</a>
         </li>
       </ul>
     </div>

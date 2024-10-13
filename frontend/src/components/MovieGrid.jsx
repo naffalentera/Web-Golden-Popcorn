@@ -2,15 +2,16 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const MovieGrid = ({ movies }) => {
-    useEffect(() => {
-        console.log('Movies state updated:', movies);  // Log setiap kali movies diupdate
-    }, [movies]);
+    // useEffect(() => {
+    //     console.log('Movies state updated:', movies);  // Log setiap kali movies diupdate
+    // }, [movies]);
 
     const navigate = useNavigate();
 
     // Fungsi untuk menambahkan movie ke watchlist
     const handleAddWatchlist = (movie) => {
-        const token = localStorage.getItem('userToken');
+        const token = localStorage.getItem('UserToken');
+        console.log('Token received', token);
 
         if (!token) {
             // Jika belum login, redirect ke halaman login
@@ -19,7 +20,7 @@ const MovieGrid = ({ movies }) => {
         }
 
         // Jika sudah login, kirim request ke API untuk menambahkan movie ke watchlist
-        fetch('/api/watchlist', {
+        fetch('http://localhost:5000/api/watchlist', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
