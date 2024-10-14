@@ -4,6 +4,8 @@ import Footer from '../../components/Footer';
 import Filter from '../../components/Filter';
 import MovieGrid from '../../components/MovieGrid';
 import { useNavigate } from 'react-router-dom';
+import Button from '../../components/Button';
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -11,6 +13,8 @@ const HomePage = () => {
   const [sortedMovies, setSortedMovies] = useState([]);
   const [sortBy, setSortBy] = useState('alphabetics-az');
   const [resetFilters, setResetFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const moviesPerPage = 20;
 
   useEffect(() => {
     // Dapatkan token dari query parameter di URL
@@ -28,19 +32,35 @@ const HomePage = () => {
   }, [navigate]);
 
   // Fetch semua data film tanpa query pencarian
-  useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/movies/all');
-        const data = await res.json();
-        setMovies(data);
-      } catch (err) {
-        console.error(err.message);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchMovies = async () => {
+  //     try {
+  //       const res = await fetch('http://localhost:5000/api/movies/all');
+  //       const data = await res.json();
+  //       setMovies(data);
+  //     } catch (err) {
+  //       console.error(err.message);
+  //     }
+  //   };
 
-    fetchMovies();
-  }, []);
+  //   fetchMovies(currentPage);
+  // }, [currentPage]);
+
+  const fetchMovies = async (page) => {
+    try {
+      // Mengambil data film dari API, dengan query parameter page dan limit
+      const res = await fetch(`http://localhost:5000/api/movies/all?page=${page}&limit=${moviesPerPage}`);
+      const data = await res.json(); // Mengubah respons API menjadi JSON
+      setMovies(data); // Update state movies dengan data baru
+    } catch (err) {
+      console.error('Error fetching movies:', err); // Menangani error
+    }
+  };
+
+  // Ketika currentPage berubah, panggil useEffect untuk mengambil data film
+  useEffect(() => {
+    fetchMovies(currentPage); // Ambil film sesuai halaman saat ini
+  }, [currentPage]);
 
   // Apply sorting ke seluruh film
   useEffect(() => {
@@ -78,6 +98,16 @@ const HomePage = () => {
       });
   };
 
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prevPage) => prevPage - 1); // Kurangi currentPage untuk kembali ke halaman sebelumnya
+    }
+  };
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Header />
@@ -99,6 +129,16 @@ const HomePage = () => {
             </select>
           </div>
           <MovieGrid movies={sortedMovies} />
+          {/* Tombol Pagination */}
+          <div className="d-flex justify-content-center gap-2 align-items-center mb-3" >
+            <Button className="btn-golden" onClick={handlePrevPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            <span>Page {currentPage}</span>
+            <Button className="btn-golden" onClick={handleNextPage}>
+              Next
+            </Button>
+          </div>
         </div>
       </main>
       <Footer />

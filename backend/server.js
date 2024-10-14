@@ -336,38 +336,37 @@ app.post('/api/reset-password', async (req, res) => {
 // Handle filter
 const getFilterValue = (param) => param && param !== 'all' ? param : '%';
 
-const buildMoviesQuery = (searchQuery, genreFilter, countryFilter, awardFilter, yearFilter) => `
-  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, countries.name as country, movies.poster, movies.trailer
+const buildMoviesQuery = (searchQuery, genreFilter, countryFilter, yearFilter, limit, offset) => `
+  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, array_agg(countries.name) as country, movies.poster, movies.trailer
   FROM movies
   LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
   LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
-  LEFT JOIN countries ON movies.id_country = countries.id_country
-  LEFT JOIN movie_awards ON movies.id_movie = movie_awards.id_movie
-  LEFT JOIN awards ON movie_awards.id_award = awards.id_award
+  LEFT JOIN movie_countries ON movies.id_movie = movie_countries.id_movie
+  LEFT JOIN countries ON movie_countries.id_country = countries.id_country
   WHERE movies.title ILIKE $1
   AND ($2::text = '%' OR genres.name ILIKE $2)
   AND ($3::text = '%' OR countries.name ILIKE $3)
-  AND ($4::text = '%' OR awards.name ILIKE $4)
-  AND ($5::text = '%' OR movies.year::text = $5)
+  AND ($4::text = '%' OR movies.year::text = $4)
   AND movies.status = 'approved'
-  GROUP BY movies.id_movie, countries.name;
+  GROUP BY movies.id_movie, countries.name
+  LIMIT $5 OFFSET $6;
 `;
 
 const handleMoviesRequest = async (req, res, isSearch = false) => {
-  const { query, genre, country, award, year } = req.query;
+  const { query, genre, country, year, page = 1, limit = 20  } = req.query;
 
   try {
     const searchQuery = isSearch && query ? `%${query}%` : '%';
     const genreFilter = getFilterValue(genre);
     const countryFilter = getFilterValue(country);
-    const awardFilter = getFilterValue(award);
     const yearFilter = getFilterValue(year);
+    const offset = (page - 1) * limit;
 
     // console.log('Filters applied in SQL:', { searchQuery, genreFilter, countryFilter, awardFilter, yearFilter });
 
-    const sqlQuery = buildMoviesQuery(searchQuery, genreFilter, countryFilter, awardFilter, yearFilter);
+    const sqlQuery = buildMoviesQuery(searchQuery, genreFilter, countryFilter, yearFilter, limit, offset);
 
-    const result = await pool.query(sqlQuery, [searchQuery, genreFilter, countryFilter, awardFilter, yearFilter]);
+    const result = await pool.query(sqlQuery, [searchQuery, genreFilter, countryFilter, yearFilter, limit, offset]);
 
     // console.log('Movies fetched:', result.rows);
     res.json(result.rows);

@@ -10,10 +10,11 @@ const SearchPage = () => {
   const [sortedMovies, setSortedMovies] = useState([]); // State untuk film yang sudah diurutkan
   const [sortBy, setSortBy] = useState('alphabetics-az');  // State untuk kriteria sorting
   const location = useLocation();
-  const query = new URLSearchParams(location.search).get('query');
-  
+  const query = new URLSearchParams(location.search).get('query');  
   const [resetFilters, setResetFilters] = useState(false); // State baru untuk reset filter
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const moviesPerPage = 20;
+
   // Fetch movies berdasarkan query pencarian
   useEffect(() => {
     const fetchMovies = async () => {

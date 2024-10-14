@@ -109,7 +109,7 @@ const countryList = movies.countries && movies.countries.length > 0 ? movies.cou
           </div>
 
           {/* Subheading Actors */}
-          <div className="mt-4">x
+          <div className="mt-4">
             <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>Actors</h3>
           </div>
 

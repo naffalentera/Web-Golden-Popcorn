@@ -5,12 +5,10 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
     const [years, setYears] = useState([]);
     const [genres, setGenres] = useState([]);
     const [countries, setCountries] = useState([]);
-    const [awards, setAwards] = useState([]);
     const navigate = useNavigate();
 
     const [selectedGenre, setSelectedGenre] = useState('all');
     const [selectedCountry, setSelectedCountry] = useState('all');
-    const [selectedAward, setSelectedAward] = useState('all');
     const [selectedYear, setSelectedYear] = useState('all');
 
     useEffect(() => {
@@ -44,20 +42,10 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
             }
         };
 
-        const fetchAwards = async () => {
-            try {
-                const response = await fetch('http://localhost:5000/api/awards');
-                const data = await response.json();
-                setAwards(["All", ...data.map(item => item.name)]);
-            } catch (error) {
-                console.error('Error fetching awards:', error);
-            }
-        };
-
         // Call all the fetch functions
         fetchGenres();
         fetchCountries();
-        fetchAwards();
+        // fetchAwards();
     }, []);
 
     // Reset filters when `resetFilters` changes
@@ -65,9 +53,9 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
         if (resetFilters) {
             setSelectedGenre('all');
             setSelectedCountry('all');
-            setSelectedAward('all');
+            // setSelectedAward('all');
             setSelectedYear('all');
-            onFilterChange({ year: 'all', genre: 'all', country: 'all', award: 'all' });
+            onFilterChange({ year: 'all', genre: 'all', country: 'all'});
             onResetComplete();  // Notify parent that reset is complete
         }
     }, [resetFilters, onFilterChange, onResetComplete]);
@@ -76,13 +64,13 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
     const clearFilters = () => {
         setSelectedGenre('all');
         setSelectedCountry('all');
-        setSelectedAward('all');
+        // setSelectedAward('all');
         setSelectedYear('all');
         onFilterChange({
             year: 'all',
             genre: 'all',
             country: 'all',
-            award: 'all',
+            // award: 'all',
         });
     };
 
@@ -91,7 +79,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
         e.preventDefault();
 
          // Validasi filter sebelum memanggil API
-        if (!selectedYear || !selectedGenre || !selectedCountry || !selectedAward) {
+        if (!selectedYear || !selectedGenre || !selectedCountry) {
             console.error('All filters must be selected');
             return;
         }
@@ -100,7 +88,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
             year: selectedYear,
             genre: selectedGenre,
             country: selectedCountry,
-            award: selectedAward,
+            // award: selectedAward,
         };
         
         onFilterChange(filters);
@@ -144,14 +132,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
                         ))}
                     </select>
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="award" className="form-label">Award</label>
-                    <select id="award" className="form-select" value={selectedAward} onChange={e => setSelectedAward(e.target.value)}>
-                        {awards.map((award, index) => (
-                            <option key={index} value={award.toLowerCase()}>{award}</option>
-                        ))}
-                    </select>
-                </div>
+                
                 {/* Submit and Clear Buttons */}
                 <button id="submit" type="submit" className="btn btn-golden w-100 mb-2" onClick={submitFilters}>Submit</button>
                 <button id="clear" className="btn btn-clear w-100" onClick={clearFilters}>Clear</button>
