@@ -51,6 +51,7 @@ const HomePage = () => {
       // Mengambil data film dari API, dengan query parameter page dan limit
       const res = await fetch(`http://localhost:5000/api/movies/all?page=${page}&limit=${moviesPerPage}`);
       const data = await res.json(); // Mengubah respons API menjadi JSON
+      console.log('Fetched movies:', data);
       setMovies(data); // Update state movies dengan data baru
     } catch (err) {
       console.error('Error fetching movies:', err); // Menangani error
@@ -64,7 +65,14 @@ const HomePage = () => {
 
   // Apply sorting ke seluruh film
   useEffect(() => {
-    let sorted = [...movies];
+
+    // Hapus duplikasi berdasarkan id_movie
+    const uniqueMovies = movies.filter(
+      (movie, index, self) =>
+        index === self.findIndex((m) => m.id_movie === movie.id_movie)
+    );
+
+    let sorted = [...uniqueMovies];
 
     if (sortBy === 'alphabetics-az') {
       sorted.sort((a, b) => a.title.localeCompare(b.title));
