@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import Button from './Button';
 import '../styles/style.css';
 
@@ -7,12 +8,27 @@ const Header = () => {
   const [searchInput, setSearchInput] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate(); 
-
+  const [username, setUsername] = useState('');
   // Gunakan useEffect untuk memeriksa status login saat komponen pertama kali dimuat
   useEffect(() => {
     const token = localStorage.getItem('UserToken');
     // console.log('Token received', token);
     setIsLoggedIn(!!token); // Set isLoggedIn menjadi true jika token ada, false jika tidak
+  }, []);
+
+  
+
+  useEffect(() => {
+    const token = localStorage.getItem('UserToken');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token); // Mendekode token
+        console.log("Decoded Token:", decodedToken);
+        setUsername(decodedToken.username); // Ambil username dari payload token
+      } catch (error) {
+        console.error('Invalid token', error);
+      }
+    }
   }, []);
 
 
@@ -50,11 +66,6 @@ const Header = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
     navigate('/home');
-  };
-
-  const handleProfileClick = () => {
-    // Navigate to the user's profile page
-    navigate('/profile');
   };
 
   const handleLogoClick = () => {
@@ -119,7 +130,7 @@ const Header = () => {
                     <i className="fas fa-user-circle fa-2x"></i>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                    <li><button className="dropdown-item" onClick={handleProfileClick}>Profile</button></li>
+                    <li className="dropdown-item">Username: {username}</li> 
                     <li><button className="dropdown-item" onClick={handleLogoutClick}>Logout</button></li>
                   </ul>
                 </div>
@@ -153,7 +164,7 @@ const Header = () => {
                       <i className="fas fa-user-circle fa-2x"></i>
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButtonMobile">
-                      <li><button className="dropdown-item" onClick={handleProfileClick}>Profile</button></li>
+                      <li className="dropdown-item">Username: {username}</li>
                       <li><button className="dropdown-item" onClick={handleLogoutClick}>Logout</button></li>
                     </ul>
                   </div>

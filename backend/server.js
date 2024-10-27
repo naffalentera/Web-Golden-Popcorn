@@ -544,7 +544,7 @@ app.post('/api/comments', async (req, res) => {
   const { comment, rate, id_movie } = req.body;
 
   // Dummy data: User Alice digunakan sebagai pengguna yang memberikan komentar
-  const dummyUsername = 'alice';
+  const dummyUsername = 'naffa';
 
   try {
     // Cari ID user berdasarkan username
