@@ -35,7 +35,13 @@ const SearchPage = () => {
 
   // Apply sorting
   useEffect(() => {
-    let sorted = [...movies];
+    // Hapus duplikasi berdasarkan id_movie
+    const uniqueMovies = movies.filter(
+      (movie, index, self) =>
+        index === self.findIndex((m) => m.id_movie === movie.id_movie)
+    );
+
+    let sorted = [...uniqueMovies];
 
     if (sortBy === 'alphabetics-az') {
       sorted.sort((a, b) => a.title.localeCompare(b.title));

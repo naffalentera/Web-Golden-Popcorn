@@ -159,7 +159,11 @@ app.post('/api/login', async (req, res) => {
     }
 
     // Buat JWT token jika login berhasil
-    const token = jwt.sign({ id: user.id_user, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: user.id_user, username: user.username, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
 
     // Kirim token dan role pengguna ke frontend
     res.json({ success: true, token, role: user.role });
@@ -337,7 +341,7 @@ app.post('/api/reset-password', async (req, res) => {
 const getFilterValue = (param) => param && param !== 'all' ? param : '%';
 
 const buildMoviesQuery = (searchQuery, genreFilter, countryFilter, yearFilter, limit, offset) => `
-  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, array_agg(countries.name) as country, movies.poster, movies.trailer
+  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(DISTINCT genres.name) as genre, array_agg(DISTINCT countries.name) as country, movies.poster, movies.trailer
   FROM movies
   LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
   LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
@@ -427,7 +431,9 @@ function authenticateToken(req, res, next) {
   if (token == null) return res.status(401).json({ message: 'Token is missing' });  // Jika tidak ada token, kirim Unauthorized
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Token is invalid' });  // Jika token tidak valid, kirim Forbidden
+    if (err) {
+      return res.status(403).json({ message: 'Token is invalid' });
+    }  // Jika token tidak valid, kirim Forbidden
     
     req.user = user;  // Simpan informasi user di request object
     next();  // Lanjutkan ke middleware berikutnya atau ke route handler
@@ -540,23 +546,15 @@ app.get('/api/movies/:id_movie/actors', async (req, res) => {
 });
 
 // Endpoint untuk menambah komentar
-app.post('/api/comments', async (req, res) => {
+app.post('/api/comments', authenticateToken, async (req, res) => {
   const { comment, rate, id_movie } = req.body;
 
-  // Dummy data: User Alice digunakan sebagai pengguna yang memberikan komentar
-  const dummyUsername = 'naffa';
-
   try {
-    // Cari ID user berdasarkan username
-    const userResult = await pool.query('SELECT id_user FROM users WHERE username = $1', [dummyUsername]);
-    
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    // ID dan username pengguna dari token (dari middleware authenticateToken)
+    const id_user = req.user.id;  
+    const username = req.user.username;
 
-    const id_user = userResult.rows[0].id_user;
-
-    // Simpan komentar di database
+    // Simpan komentar di database dengan id_user yang sesuai
     const insertCommentQuery = `
       INSERT INTO comments (comment, rate, id_movie, id_user, status)
       VALUES ($1, $2, $3, $4, 'approved')
@@ -570,6 +568,7 @@ app.post('/api/comments', async (req, res) => {
     res.status(500).json({ message: 'Error adding comment' });
   }
 });
+
 
 // Endpoint untuk mengambil komentar berdasarkan film
 app.get('/api/movies/:id_movie/comments', async (req, res) => {
@@ -589,6 +588,7 @@ app.get('/api/movies/:id_movie/comments', async (req, res) => {
     res.status(500).json({ message: 'Error fetching comments' });
   }
 });
+
 
 //endpoint untuk data admin
 app.get('/api/admins', async (req, res) => {

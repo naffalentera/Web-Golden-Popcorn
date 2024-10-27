@@ -8,10 +8,22 @@ const ReviewForm = ({ id_movie }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const token = localStorage.getItem('UserToken'); // Ambil token JWT dari localStorage
+    console.log('Token dari localStorage:', token); // Debugging
+    
+    // Pastikan token diambil dengan benar
+    if (!token) {
+      console.error('Token is missing!');
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Kirim token JWT di header
+        },
         body: JSON.stringify({ comment, rate, id_movie }),
       });
 
