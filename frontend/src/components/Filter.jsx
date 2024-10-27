@@ -26,14 +26,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
             try {
                 const response = await fetch('http://localhost:5000/api/genres');
                 const data = await response.json();
-    
-                // Hapus kurung kurawal, filter yang tidak mengandung koma, dan filter yang tidak mengandung tanda kutip
-                const singleGenres = data
-                    .map(item => item.name.replace(/{|}/g, ''))    // Hapus kurung kurawal
-                    .filter(item => !item.includes(','))          // Hanya data tanpa koma
-                    .filter(item => !item.includes('"') && !item.includes("'"));  // Hanya data tanpa tanda kutip
-    
-                setGenres(["All", ...singleGenres]);
+                setGenres(["All", ...data.map(item => item.name)]);
             } catch (error) {
                 console.error('Error fetching genres:', error);
             }
@@ -43,14 +36,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
             try {
                 const response = await fetch('http://localhost:5000/api/countries');
                 const data = await response.json();
-    
-                // Hapus kurung kurawal, filter yang tidak mengandung koma, dan filter yang tidak mengandung tanda kutip
-                const singleCountries = data
-                    .map(item => item.name.replace(/{|}/g, ''))    // Hapus kurung kurawal
-                    .filter(item => !item.includes(','))          // Hanya data tanpa koma
-                    .filter(item => !item.includes('"') && !item.includes("'"));  // Hanya data tanpa tanda kutip
-    
-                setCountries(["All", ...singleCountries]);
+                setCountries(["All", ...data.map(item => item.name)]);
             } catch (error) {
                 console.error('Error fetching countries:', error);
             }

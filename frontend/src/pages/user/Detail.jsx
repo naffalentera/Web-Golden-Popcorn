@@ -81,7 +81,7 @@ const countryList = movies.countries && movies.countries.length > 0 ? movies.cou
   return (
     <div>
       <Header />
-      <div className="container mt-4">
+      <div className="container mt-6">
           {/* Title Section */}
           <div className="row justify-content-center">
             <div className="col-12 text-center">

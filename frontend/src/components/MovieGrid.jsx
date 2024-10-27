@@ -26,7 +26,7 @@ const MovieGrid = ({ movies }) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ movieId: movie.id })
+            body: JSON.stringify({ movieId: movie.id_movie  }) 
         })
         .then(response => {
             console.log(response);

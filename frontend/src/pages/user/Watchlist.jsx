@@ -19,6 +19,7 @@ const WatchlistPage = () => {
       try {
         const res = await fetch('http://localhost:5000/api/watchlist', {
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}` // Pastikan token valid dikirimkan
           }
         });
@@ -83,7 +84,12 @@ const WatchlistPage = () => {
               onResetComplete={() => setResetFilters(false)} 
            />
           <div className="col-md-10 mt- mx-auto">
-            <h1 className="text-center mt-4 mb-4">Your Watchlist</h1>
+          <div className="row justify-content-center mb-4">
+            <div className="col-12 text-center">
+              <span style={{ color: '#FFFFFF', fontFamily: 'Oswald', fontSize: '40px' }}>Detail </span>
+              <span style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '40px' }}>Information</span>
+            </div>
+          </div>
             <div className="d-flex justify-content-end gap-2 align-items-center mb-3">
               <label htmlFor="sort" className="form-label mb-0">Sorted by:</label>
               <select id="sort" className="form-select w-auto" value={sortBy} onChange={handleSortChange}>
