@@ -9,7 +9,6 @@ const ReviewForm = ({ id_movie }) => {
     e.preventDefault();
 
     const token = localStorage.getItem('UserToken'); // Ambil token JWT dari localStorage
-    console.log('Token dari localStorage:', token); // Debugging
     
     // Pastikan token diambil dengan benar
     if (!token) {

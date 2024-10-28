@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import "../../styles/detail.css";
 
 import ActorCard from "../../components/ActorCard";
-import StarDropdown from "../../components/StarDropdown";
 import ReviewList from "../../components/ReviewList";
 import ReviewForm from "../../components/ReviewForm";
 import Header from "../../components/Header";
@@ -18,8 +17,6 @@ function DetailPage() {
     const fetchMovieDetail = async () => {
 
         const token = localStorage.getItem('UserToken'); // Ambil token dari localStorage
-  
-        console.log('Token dari localStorage:', token); // Debugging token
        
         try {
             const response = await fetch(`http://localhost:5000/api/movies/title/${title}`, {

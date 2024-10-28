@@ -609,3 +609,71 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// -------------------------------------------------------END POINT CMS------------------------------------------------------------- //
+
+//Endpoint movie validate
+app.get('/api/movies/validate', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT movies.id_movie, movies.synopsis, movies.title, movies.status, movies.year, movies.trailer, movies.poster,
+       array_agg(DISTINCT genres.name) as genres, array_agg(DISTINCT actors.name) as actors
+       FROM movies
+       LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+       LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+       LEFT JOIN movie_actors ON movies.id_movie = movie_actors.id_movie
+       LEFT JOIN actors ON movie_actors.id_actor = actors.id_actor
+       GROUP BY movies.id_movie`
+       );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching movies:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/movies/validate/:id_movie/actors', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT actors.name, actors.photo
+       FROM actors
+       JOIN movie_actors ON actors.id_actor = movie_actors.id_actor
+       WHERE movie_actors.id_movie = $1`, [id_movie]
+    );
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Endpoint untuk menghapus film berdasarkan id_movie
+app.delete('/api/movies/:id_movie', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    // Hapus film berdasarkan id_movie
+    await pool.query('DELETE FROM movies WHERE id_movie = $1', [id_movie]);
+
+    res.status(200).json({ message: 'Movie deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting movie:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk mengubah status film menjadi "approved"
+app.put('/api/movies/:id_movie/approve', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    // Update status menjadi "approved"
+    await pool.query('UPDATE movies SET status = $1 WHERE id_movie = $2', ['approved', id_movie]);
+
+    res.status(200).json({ message: 'Movie approved successfully' });
+  } catch (err) {
+    console.error('Error approving movie:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
