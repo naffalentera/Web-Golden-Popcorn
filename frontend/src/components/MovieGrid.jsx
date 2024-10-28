@@ -10,7 +10,7 @@ const MovieGrid = ({ movies }) => {
 
     // Fungsi untuk menambahkan movie ke watchlist
     const handleAddWatchlist = (movie) => {
-        const token = localStorage.getItem('UserToken');
+        const token = sessionStorage.getItem('UserToken');
         console.log('Token received', token);
 
         if (!token) {

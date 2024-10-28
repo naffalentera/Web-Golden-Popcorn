@@ -9,7 +9,7 @@ function Sidebar() {
 
   // Gunakan useEffect untuk memeriksa status login saat komponen pertama kali dimuat
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     setIsLoggedIn(!!token); // Set isLoggedIn menjadi true jika token ada, false jika tidak
   }, []);
 
@@ -42,7 +42,7 @@ function Sidebar() {
   
 
   const handleLogoutClick = () => {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     setIsLoggedIn(false);
     navigate('/login');
   };

@@ -11,14 +11,14 @@ const Header = () => {
   const [username, setUsername] = useState('');
   // Gunakan useEffect untuk memeriksa status login saat komponen pertama kali dimuat
   useEffect(() => {
-    const token = localStorage.getItem('UserToken');
+    const token = sessionStorage.getItem('UserToken');
     setIsLoggedIn(!!token); // Set isLoggedIn menjadi true jika token ada, false jika tidak
   }, []);
 
   
 
   useEffect(() => {
-    const token = localStorage.getItem('UserToken');
+    const token = sessionStorage.getItem('UserToken');
     if (token) {
       try {
         const decodedToken = jwtDecode(token); // Mendekode token
@@ -61,8 +61,8 @@ const Header = () => {
 
   const handleLogoutClick = () => {
     // Log out the user by clearing the token and navigating to home or login page
-    localStorage.removeItem('UserToken');
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('UserToken');
+    sessionStorage.removeItem('token');
     setIsLoggedIn(false);
     navigate('/home');
   };

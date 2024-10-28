@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children, roleRequired }) => {
-    const token = localStorage.getItem('token') || localStorage.getItem('UserToken'); // Ambil token dari localStorage
+    const token = sessionStorage.getItem('token') || sessionStorage.getItem('UserToken'); // Ambil token dari sessionStorage
     // console.log('Token received', token);
   
     if (!token) {

@@ -146,7 +146,7 @@ const MovieInputPage = () => {
       return; // Stop the submission if validation fails
     }
 
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     let userId;
     const genreIds = selectedGenres.filter((id) => id !== null && id !== undefined);
     if (genreIds.length === 0) {

@@ -140,7 +140,7 @@ const AddMoviePage = () => {
 
     const handleSubmit = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('UserToken');
+    const token = sessionStorage.getItem('UserToken');
     let userId;
     const genreIds = selectedGenres.filter((id) => id !== null && id !== undefined);
     if (genreIds.length === 0) {

@@ -12,7 +12,7 @@ const WatchlistPage = () => {
   
   // Panggil API watchlist
   useEffect(() => {
-    const token = localStorage.getItem('UserToken');
+    const token = sessionStorage.getItem('UserToken');
 
     const fetchWatchlist = async () => {
       console.log('Token received', token);

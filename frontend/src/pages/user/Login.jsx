@@ -45,7 +45,7 @@ function LoginPage() {
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            localStorage.setItem('token', data.token); // Simpan JWT token
+            sessionStorage.setItem('token', data.token); // Simpan JWT token
             if (data.role === 'admin') {
                 window.location.href = 'http://localhost:3000/dashboard'; // Redirect ke dashboard admin
               } else {

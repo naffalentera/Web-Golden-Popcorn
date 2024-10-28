@@ -10,7 +10,7 @@ const ReviewForm = ({ id_movie }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('UserToken'); // Ambil token JWT dari localStorage
+    const token = sessionStorage.getItem('UserToken'); // Ambil token JWT dari sessionStorage
     // setIsLoggedIn(!!token);
 
     // Pastikan token diambil dengan benar
