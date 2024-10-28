@@ -492,13 +492,15 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
   }
 });
 
-
 app.post('/api/movie/add', authenticateToken, 
   [
     // Validasi input menggunakan express-validator
     body('title').notEmpty().withMessage('Title is required'),
+    body('altTitle').optional().isString().withMessage('Alternative title must be a string'),
     body('year').isInt({ min: 1900, max: new Date().getFullYear() }).withMessage('Year must be a valid integer'),
     body('country').notEmpty().withMessage('Country is required'),
+    body('synopsis').notEmpty().withMessage('Synopsis is required'),
+    body('trailer').notEmpty().withMessage('Trailer URL is required'),
     body('genres').isArray({ min: 1 }).withMessage('At least one genre is required'),
     body('actors').isArray({ min: 1, max: 8 }).withMessage('At least one actor is required, up to a maximum of 8'),
   ],
@@ -509,6 +511,7 @@ app.post('/api/movie/add', authenticateToken,
     }
 
     const { title, altTitle, year, country, synopsis, genres, actors, trailer, poster } = req.body;
+    console.log("Genre IDs received:", genres);
     const id_user = req.user.id; // Ambil id_user dari token
 
     // Tentukan status berdasarkan peran: jika admin, status adalah 'approved'
@@ -552,12 +555,12 @@ app.post('/api/movie/add', authenticateToken,
       }
 
       await pool.query('COMMIT');
-      res.status(201).json({ message: 'Movie added successfully with ${status} status.' });
+      res.status(200).json({ success: true, message: 'Movie added successfully with ${status} status.' });
 
     } catch (error) {
       await pool.query('ROLLBACK');
       console.error('Error adding movie:', error.message);
-      res.status(500).json({ message: 'Failed to add movie.' });
+      res.status(500).json({ success: false, message: 'Failed to add movie.' });
     }
   }
 );

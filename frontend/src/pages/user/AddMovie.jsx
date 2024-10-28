@@ -16,7 +16,7 @@ const AddMoviePage = () => {
   const [actors, setActors] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [trailerLink, setTrailerLink] = useState('');
+  const [trailer, setTrailer] = useState('');
   const [poster, setPoster] = useState(null);
   const [posterLink, setPosterLink] = useState('');
   const [error, setError] = useState('');
@@ -55,19 +55,14 @@ const AddMoviePage = () => {
   // Menangani perubahan checkbox
   const handleGenreChange = (id_genre) => {
     setSelectedGenres((prevGenres) => {
-      // Debugging log
-      console.log('Previous genres:', prevGenres);
-      console.log('Toggling genre:', id_genre);
 
       if (prevGenres.includes(id_genre)) {
         // Hapus id_genre dari selectedGenres
         const updatedGenres = prevGenres.filter((genre) => genre !== id_genre);
-        console.log('Updated genres after removing:', updatedGenres);
         return updatedGenres;
       } else {
         // Tambahkan id_genre ke selectedGenres
         const updatedGenres = [...prevGenres, id_genre];
-        console.log('Updated genres after adding:', updatedGenres);
         return updatedGenres;
       }
     });
@@ -137,7 +132,7 @@ const AddMoviePage = () => {
     if (inputYear < 1900 || inputYear > currentYear) {
       setError(`Please enter a year between 1900 and ${currentYear}`);
     } else {
-      setError(''); // Clear error if valid
+      setError(''); 
     }
   
     setYear(inputYear);
@@ -147,7 +142,11 @@ const AddMoviePage = () => {
     e.preventDefault();
     const token = localStorage.getItem('UserToken');
     let userId;
-    const genreIds = genres.map((genre) => genre.id_genre);
+    const genreIds = selectedGenres.filter((id) => id !== null && id !== undefined);
+    if (genreIds.length === 0) {
+      alert("Please select at least one genre.");
+      return;
+    }
 
     if (token) {
       const decodedToken = jwtDecode(token);
@@ -170,14 +169,27 @@ const AddMoviePage = () => {
         synopsis,
         genres: genreIds,
         actors,
-        trailerLink,
+        trailer,
         poster,
         id_user: userId
       }),
     })
       .then((response) => response.json())
       .then((data) => {
-        alert(data.success ? 'Movie added successfully!' : 'Failed to add movie');
+        if (data.success) {
+          alert("Movie added successfully!");
+          // Reset input fields after success
+          setTitle('');
+          setAltTitle('');
+          setYear('');
+          setCountry('');
+          setSynopsis('');
+          setSelectedGenres([]);
+          setActors([]);
+          setTrailer('');
+      } else {
+          alert("Failed to add movie.");
+      }
       })
       .catch((error) => {
         console.error('Error adding movie:', error);
@@ -413,8 +425,8 @@ const AddMoviePage = () => {
                         <Form.Control
                           type="text"
                           placeholder="Enter trailer link"
-                          value={trailerLink}
-                          onChange={(e) => setTrailerLink(e.target.value)}
+                          value={trailer}
+                          onChange={(e) => setTrailer(e.target.value)}
                         />
                       </Form.Group>
                   </Row>
