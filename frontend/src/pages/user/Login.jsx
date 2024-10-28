@@ -47,10 +47,9 @@ function LoginPage() {
           if (data.success) {
             localStorage.setItem('token', data.token); // Simpan JWT token
             if (data.role === 'admin') {
-                window.location.href ='http://localhost:3000/dashboard'; // Redirect ke dashboard admin
+                window.location.href = 'http://localhost:3000/dashboard'; // Redirect ke dashboard admin
               } else {
-                localStorage.setItem('UserToken', data.token);
-                window.location.href ='http://localhost:3000/home?token=${token}'; // Redirect ke halaman home untuk user biasa
+                window.location.href = `http://localhost:3000/home?token=${data.token}`; // Redirect ke halaman home untuk user biasa
               }
           } else {
             setErrorMessage(data.message); // Tampilkan pesan error jika login gagal

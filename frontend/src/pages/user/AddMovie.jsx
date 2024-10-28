@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import InputField from '../../components/InputField';  // Pastikan path sesuai
+import { jwtDecode } from "jwt-decode";
 
-const MovieInputPage = () => {
+const AddMoviePage = () => {
   const [title, setTitle] = useState('');
   const [altTitle, setAltTitle] = useState('');
   const [year, setYear] = useState('');
@@ -12,43 +12,103 @@ const MovieInputPage = () => {
   const [countries, setCountries] = useState([]);
   const [synopsis, setSynopsis] = useState('');
   const [genres, setGenres] = useState([]);
-  const [genreOptions, setGenreOptions] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState([]);
   const [actors, setActors] = useState([]);
-  const [trailerLink, setTrailerLink] = useState('');
-  const [award, setAward] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [trailer, setTrailer] = useState('');
   const [poster, setPoster] = useState(null);
   const [posterLink, setPosterLink] = useState('');
-  const [awardOptions, setAwardOptions] = useState([]);
-
-  const maxActors = 9;
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch genres, countries, awards from the backend
-    fetch('/api/genres')
-      .then((response) => response.json())
-      .then((data) => setGenreOptions(data));
+    fetch('https://restcountries.com/v3.1/all') // API publik untuk daftar negara
+      .then((res) => res.json())
+      .then((data) => {
+        // Format data negara dan urutkan secara ascending berdasarkan nama negara
+        const sortedCountries = data
+          .map((country) => ({
+            name: country.name.common, 
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name)); // Mengurutkan berdasarkan nama
 
-    fetch('/api/countries')
-      .then((response) => response.json())
-      .then((data) => setCountries(data));
-
-    fetch('/api/awards')
-      .then((response) => response.json())
-      .then((data) => setAwardOptions(data));
+        setCountries(sortedCountries);
+      })
+      .catch((error) => console.error("Fetch error:", error));
   }, []);
 
-  const handleGenreChange = (genre) => {
-    setGenres((prevGenres) =>
-      prevGenres.includes(genre)
-        ? prevGenres.filter((g) => g !== genre)
-        : [...prevGenres, genre]
-    );
-  };
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/genres'); // Ganti URL jika berbeda
+        const data = await response.json();
+        setGenres(data); // Set data genre dari API
+        console.log("Fetched genres:", data);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    };
 
+    fetchGenres();
+  }, []);
+
+  // Menangani perubahan checkbox
+  const handleGenreChange = (id_genre) => {
+    setSelectedGenres((prevGenres) => {
+
+      if (prevGenres.includes(id_genre)) {
+        // Hapus id_genre dari selectedGenres
+        const updatedGenres = prevGenres.filter((genre) => genre !== id_genre);
+        return updatedGenres;
+      } else {
+        // Tambahkan id_genre ke selectedGenres
+        const updatedGenres = [...prevGenres, id_genre];
+        return updatedGenres;
+      }
+    });
+  };
+  
+  useEffect(() => {
+    if (searchTerm === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    const fetchActors = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/actors?name=${searchTerm}`);
+        const data = await response.json();
+        setSearchResults(data); // Simpan hasil pencarian di state
+        console.log('Fetched Actors:', data);
+      } catch (error) {
+        console.error('Error fetching actors:', error);
+      }
+    };
+
+    const debounceFetch = setTimeout(fetchActors, 300); // Tunggu 300ms sebelum fetch
+
+    return () => clearTimeout(debounceFetch); // Clear timeout jika searchTerm berubah
+  }, [searchTerm]);
+
+  // Fungsi untuk menambah aktor dengan batas maksimal 8
   const handleActorAdd = (actor) => {
-    if (actors.length < maxActors) {
+    if (actors.length >= 8) {
+      alert('You can only add up to 8 actors.');
+      return;
+    }
+
+    // Cek jika aktor sudah ada di daftar berdasarkan id_actor
+    if (actors.some((a) => a.id_actor === actor.id_actor)) {
+      alert(`${actor.name} is already added to the list.`);
+      return;
+    }
+
+    if (!actors.includes(actor.name)) {
       setActors([...actors, actor]);
     }
+
+    setSearchTerm(''); // Kosongkan input setelah memilih aktor
+    setSearchResults([]); // Kosongkan hasil pencarian setelah memilih
   };
 
   const handleActorRemove = (index) => {
@@ -57,18 +117,45 @@ const MovieInputPage = () => {
 
   const handlePosterUpload = (e) => {
     setPoster(URL.createObjectURL(e.target.files[0]));
-    setPosterLink(''); // Reset poster link input
+    setPosterLink('');
   };
 
   const handlePosterLinkChange = (e) => {
     setPosterLink(e.target.value);
-    setPoster(e.target.value); // Set the poster to the URL image
+    setPoster(e.target.value);
   };
 
-  const handleSubmit = (e) => {
+  const handleYearChange = (e) => {
+    const inputYear = e.target.value;
+    const currentYear = new Date().getFullYear();
+  
+    if (inputYear < 1900 || inputYear > currentYear) {
+      setError(`Please enter a year between 1900 and ${currentYear}`);
+    } else {
+      setError(''); 
+    }
+  
+    setYear(inputYear);
+  };
+
+    const handleSubmit = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('userToken');
-    fetch('/api/movie/add', {
+    const token = localStorage.getItem('UserToken');
+    let userId;
+    const genreIds = selectedGenres.filter((id) => id !== null && id !== undefined);
+    if (genreIds.length === 0) {
+      alert("Please select at least one genre.");
+      return;
+    }
+
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      userId = decodedToken.id_user; // Pastikan ini sesuai dengan nama field di token JWT
+    } else {
+      console.error("User token is missing.");
+    }
+
+    fetch('http://localhost:5000/api/movie/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -80,20 +167,29 @@ const MovieInputPage = () => {
         year,
         country,
         synopsis,
-        genres,
+        genres: genreIds,
         actors,
-        trailerLink,
+        trailer,
         poster,
-        award,
+        id_user: userId
       }),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          alert('Movie added successfully!');
-        } else {
-          alert('Failed to add movie');
-        }
+          alert("Movie added successfully!");
+          // Reset input fields after success
+          setTitle('');
+          setAltTitle('');
+          setYear('');
+          setCountry('');
+          setSynopsis('');
+          setSelectedGenres([]);
+          setActors([]);
+          setTrailer('');
+      } else {
+          alert("Failed to add movie.");
+      }
       })
       .catch((error) => {
         console.error('Error adding movie:', error);
@@ -103,227 +199,246 @@ const MovieInputPage = () => {
 
   return (
     <>
-    <Header/>
-    <Container fluid className="mt-3">
-      <Row>
-        {/* Main Content */}
-        <Col md={12}>
-          <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col>
-                <Form.Group>
-                  <Form.Label>Poster</Form.Label>
-                  <div className="mb-3">
-                    {poster ? (
-                      <img
-                        src={poster}
-                        alt="Poster Preview"
-                        className="img-fluid mb-3"
-                        style={{
-                          width: '100%',
-                          height: '400px',
-                          objectFit: 'cover',
-                          borderRadius: '5px',
-                        }}
+      <Header/>
+      <Container className="container-md mt-3">
+      <div className="row justify-content-center mb-3">
+            <div className="col-12 text-center">
+              <span style={{ color: '#FFFFFF', fontFamily: 'Oswald', fontSize: '40px' }}>Add </span>
+              <span style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '40px' }}>New Movie</span>
+            </div>
+          </div>
+        <Row>
+          <Col md={12}>
+            <Form onSubmit={handleSubmit}>
+              <Row>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Poster</Form.Label>
+                    <div className="mb-3">
+                      {poster ? (
+                        <img
+                          src={poster}
+                          alt="Poster Preview"
+                          className="img-fluid mb-3"
+                          style={{
+                            width: '100%',
+                            height: '400px',
+                            objectFit: 'cover',
+                            borderRadius: '5px',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="mb-3"
+                          style={{
+                            width: '100%',
+                            height: '400px',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.2rem',
+                            color: '#ccc',
+                          }}
+                        >
+                          <span>Image Preview</span>
+                        </div>
+                      )}
+                      <Form.Control
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePosterUpload}
+                        className="mb-2"
                       />
-                    ) : (
-                      <div
-                        className="mb-3"
-                        style={{
-                          width: '100%',
-                          height: '400px',
-                          backgroundColor: '#f0f0f0',
-                          borderRadius: '5px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '1.2rem',
-                          color: '#ccc',
-                        }}
-                      >
-                        <span>Image Preview</span>
+                      <Form.Control
+                        type="text"
+                        placeholder="Or enter image URL"
+                        value={posterLink}
+                        onChange={handlePosterLinkChange}
+                      />
+                    </div>
+                    <Button className="btn btn-golden" type="submit">Submit</Button>
+                  </Form.Group>
+                </Col>
+
+                <Col md={9}>
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group>
+                        <Form.Label>Title</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter title"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Alternative Title</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter alternative title"
+                          value={altTitle}
+                          onChange={(e) => setAltTitle(e.target.value)}
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group>
+                        <Form.Label>Year</Form.Label>
+                        <Form.Control
+                          type="number"
+                          placeholder="Enter year"
+                          value={year}
+                          onChange={handleYearChange}
+                          min="1900"
+                          max={new Date().getFullYear()}
+                        />
+                        {error && <small className="text-danger">{error}</small>}
+                      </Form.Group>
+                    </Col>
+
+                    <Col md={6}>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Country</Form.Label>
+                          <Form.Control
+                            as="select"
+                            value={country ? country.value : ''}
+                            onChange={(e) => setCountry(e.target.value)}
+                          >
+                            <option value="">Select Country</option>
+                            {countries.map((country) => (
+                              <option key={country.name} value={country.name}>
+                                {country.name}
+                              </option>
+                            ))}
+                          </Form.Control>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Synopsis</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={synopsis}
+                      onChange={(e) => setSynopsis(e.target.value)}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Add Genres</Form.Label>
+                    <Row>
+                      {genres.map((genre) => (
+                        <Col key={genre.id_genre} xs={6} sm={4} md={3}>
+                          <Form.Check
+                            type="checkbox"
+                            label={genre.name}
+                            checked={selectedGenres.includes(genre.id_genre)}
+                            onChange={() => handleGenreChange(genre.id_genre)}
+                          />
+                        </Col>
+                      ))}
+                    </Row>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label>Add Actors (Up to 8)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Search Actor Names"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      disabled={actors.length >= 8} // Nonaktifkan input jika sudah 8 aktor
+                      autoComplete="off"
+                    />
+                    {/* Daftar hasil pencarian dalam bentuk dropdown scrollable */}
+                    {searchResults.length > 0 && (
+                      <div className="search-results-dropdown" style={{
+                        position: 'auto',
+                        maxHeight: '150px',  // Batasi tinggi dropdown
+                        overflowY: 'auto',    // Tambahkan scroll jika hasil lebih dari 5
+                        backgroundColor: 'white',
+                        border: '1px solid #ddd',
+                        zIndex: 1000
+                      }}>
+                        {searchResults.map((actor) => (
+                          <div
+                            key={actor.id_actor}
+                            onClick={() => handleActorAdd(actor)}
+                            style={{
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #eee',
+                              color: 'black',
+                            }}
+                            onMouseDown={(e) => e.preventDefault()} // Prevent loss of focus on input
+                          >
+                            {actor.name}
+                          </div>
+                        ))}
                       </div>
                     )}
-                    <Form.Control
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePosterUpload}
-                      className="mb-2"
-                    />
-                    <Form.Control
-                      type="text"
-                      placeholder="Or enter image URL"
-                      value={posterLink}
-                      onChange={handlePosterLinkChange}
-                    />
-                  </div>
-                  <Button className="btn btn-golden" type="submit">
-                    Submit
-                  </Button>
-                </Form.Group>
-              </Col>
+                    <Row>
+                      {actors.map((actor, index) => (
+                        <Col key={index} md={3} className="mb-3">
+                          <Card className="h-100">
+                            <Card.Body className="d-flex flex-column align-items-center">
+                            {console.log('Actor in list:', actor)}
+                            {console.log('actor',actor.photo)} 
+                              <img
+                                src={actor.photo || '/images/default-actor.jpg'} // Ganti dengan gambar default jika photoUrl tidak ada
+                                alt={actor.name}
+                                style={{
+                                  width: '80px',
+                                  height: '100px',
+                                  borderRadius: '5px',
+                                  margin: '10px',
+                                  objectFit: 'cover',
+                                }}
+                              />
+                              <Card.Title style={{ fontSize: '0.9rem', textAlign: 'center'}}>{actor.name}</Card.Title>
+                              <Button
+                                variant="danger"
+                                size="s"
+                                onClick={() => handleActorRemove(index)}
+                              >
+                                Remove
+                              </Button>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
+                  </Form.Group>
 
-              <Col md={9}>
-                <Row>
-                  <Col md={6}>
-                    <InputField
-                      label="Title"
-                      type="text"
-                      id="title"
-                      placeholder="Enter title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <InputField
-                      label="Alternative Title"
-                      type="text"
-                      id="altTitle"
-                      placeholder="Enter alternative title"
-                      value={altTitle}
-                      onChange={(e) => setAltTitle(e.target.value)}
-                    />
-                  </Col>
-                </Row>
-
-                <Row>
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label>Year</Form.Label>
-                      <Form.Control
-                        as="select"
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                      >
-                        <option value="">Select Year</option>
-                        {Array.from(new Array(50), (val, index) => (
-                          <option key={index} value={1975 + index}>
-                            {1975 + index}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group>
-                      <Form.Label>Country</Form.Label>
-                      <Form.Control
-                        as="select"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                      >
-                        <option value="">Select Country</option>
-                        {countries.map((country) => (
-                          <option key={country.id_country} value={country.id_country}>
-                            {country.name}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Synopsis</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={synopsis}
-                    onChange={(e) => setSynopsis(e.target.value)}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Add Genres</Form.Label>
                   <Row>
-                    {genreOptions.map((genre) => (
-                      <Col key={genre.id_genre} md={4}>
-                        <Form.Check
-                          type="checkbox"
-                          label={genre.name}
-                          checked={genres.includes(genre.id_genre)}
-                          onChange={() => handleGenreChange(genre.id_genre)}
+                      <Form.Group>
+                        <Form.Label>Link Trailer</Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Enter trailer link"
+                          value={trailer}
+                          onChange={(e) => setTrailer(e.target.value)}
                         />
-                      </Col>
-                    ))}
+                      </Form.Group>
                   </Row>
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label>Add Actors (Up to 9)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search Actor Names"
-                    onKeyDown={(e) => handleActorAdd(e.target.value)}
-                  />
-                  <Row>
-                    {actors.map((actor, index) => (
-                      <Col key={index} md={4} className="mb-3">
-                        <Card className="h-100">
-                          <Card.Body className="d-flex flex-column align-items-center">
-                            <div
-                              style={{
-                                width: '50px',
-                                height: '70px',
-                                backgroundColor: '#ccc',
-                                borderRadius: '5px',
-                                marginBottom: '10px',
-                              }}
-                            />
-                            <Card.Title>{actor}</Card.Title>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleActorRemove(index)}
-                            >
-                              Remove
-                            </Button>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    ))}
-                  </Row>
-                </Form.Group>
-
-                <Row>
-                  <Col md={6}>
-                    <InputField
-                      label="Link Trailer"
-                      type="text"
-                      id="trailerLink"
-                      placeholder="Enter trailer link"
-                      value={trailerLink}
-                      onChange={(e) => setTrailerLink(e.target.value)}
-                    />
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Award</Form.Label>
-                      <Form.Control
-                        as="select"
-                        value={award}
-                        onChange={(e) => setAward(e.target.value)}
-                      >
-                        <option value="">Select Award</option>
-                        {awardOptions.map((award) => (
-                          <option key={award.id_award} value={award.id_award}>
-                            {award.name}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
-    <Footer/>
+                </Col>
+              </Row>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
+      <Footer/>
     </>
   );
 };
 
-export default MovieInputPage;
+export default AddMoviePage;

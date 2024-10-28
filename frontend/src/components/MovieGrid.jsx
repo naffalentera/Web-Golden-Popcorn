@@ -26,9 +26,10 @@ const MovieGrid = ({ movies }) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ movieId: movie.id })
+            body: JSON.stringify({ movieId: movie.id_movie  }) 
         })
         .then(response => {
+            console.log(response);
             if (response.ok) {
                 // Tampilkan notifikasi (di sini menggunakan alert, tapi di aplikasi nyata bisa gunakan React-Toastify atau modal popup)
                 alert(`${movie.title} has been added to your watchlist.`);

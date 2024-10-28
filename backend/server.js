@@ -16,7 +16,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-const { check, validationResult } = require('express-validator');
+const { check, body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
@@ -159,7 +159,11 @@ app.post('/api/login', async (req, res) => {
     }
 
     // Buat JWT token jika login berhasil
-    const token = jwt.sign({ id: user.id_user, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: user.id_user, username: user.username, role: user.role }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
 
     // Kirim token dan role pengguna ke frontend
     res.json({ success: true, token, role: user.role });
@@ -337,7 +341,7 @@ app.post('/api/reset-password', async (req, res) => {
 const getFilterValue = (param) => param && param !== 'all' ? param : '%';
 
 const buildMoviesQuery = (searchQuery, genreFilter, countryFilter, yearFilter, limit, offset) => `
-  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(genres.name) as genre, array_agg(countries.name) as country, movies.poster, movies.trailer
+  SELECT movies.id_movie, movies.title, movies.year, movies.rating, array_agg(DISTINCT genres.name) as genre, array_agg(DISTINCT countries.name) as country, movies.poster, movies.trailer
   FROM movies
   LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
   LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
@@ -385,7 +389,7 @@ app.get('/api/movies', (req, res) => handleMoviesRequest(req, res, true));
 
 app.get('/api/genres', async (req, res) => {
   try {
-    const result = await pool.query('SELECT name FROM genres ORDER BY name');
+    const result = await pool.query('SELECT * FROM genres ORDER BY name');
     res.json(result.rows);
   } catch (err) {
     console.error(err.message);
@@ -403,15 +407,20 @@ app.get('/api/countries', async (req, res) => {
   }
 });
 
-//app.get('/api/awards', async (req, res) => {
-//  try {
-//    const result = await pool.query('SELECT name FROM awards ORDER BY name');
-//    res.json(result.rows);
-//  } catch (err) {
-//    console.error(err.message);
-//    res.status(500).send('Server Error');
-//  }
-//});
+app.get('/api/actors', async (req, res) => {
+  const { name } = req.query; // Ambil nama dari query parameter
+
+  try {
+    const result = await pool.query(
+      'SELECT id_actor, name, photo FROM actors WHERE name ILIKE $1 LIMIT 10',
+      [`%${name}%`]
+    );
+    res.json(result.rows); // Kembalikan hasil pencarian dalam bentuk JSON
+  } catch (error) {
+    console.error('Error fetching actors:', error.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 // Watchlist
@@ -427,12 +436,22 @@ function authenticateToken(req, res, next) {
   if (token == null) return res.status(401).json({ message: 'Token is missing' });  // Jika tidak ada token, kirim Unauthorized
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Token is invalid' });  // Jika token tidak valid, kirim Forbidden
+    if (err) {
+      return res.status(403).json({ message: 'Token is invalid' });
+    }  // Jika token tidak valid, kirim Forbidden
     
     req.user = user;  // Simpan informasi user di request object
     next();  // Lanjutkan ke middleware berikutnya atau ke route handler
   });
 }
+
+const authorizeAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access forbidden: Admins only.' });
+  }
+  next();
+};
+
 
 app.post('/api/watchlist', authenticateToken, (req, res) => {
   const { movieId } = req.body;
@@ -473,26 +492,79 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/api/movie/add', authenticateToken, 
+  [
+    // Validasi input menggunakan express-validator
+    body('title').notEmpty().withMessage('Title is required'),
+    body('altTitle').optional().isString().withMessage('Alternative title must be a string'),
+    body('year').isInt({ min: 1900, max: new Date().getFullYear() }).withMessage('Year must be a valid integer'),
+    body('country').notEmpty().withMessage('Country is required'),
+    body('synopsis').notEmpty().withMessage('Synopsis is required'),
+    body('trailer').notEmpty().withMessage('Trailer URL is required'),
+    body('genres').isArray({ min: 1 }).withMessage('At least one genre is required'),
+    body('actors').isArray({ min: 1, max: 8 }).withMessage('At least one actor is required, up to a maximum of 8'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-// app.post('/api/movies/add', authenticateToken, (req, res) => {
-//   const { title, description, genre, year, poster } = req.body;
-//   const userId = req.user.id; // ID pengguna yang didapat dari token
+    const { title, altTitle, year, country, synopsis, genres, actors, trailer, poster } = req.body;
+    console.log("Genre IDs received:", genres);
+    const id_user = req.user.id; // Ambil id_user dari token
 
-//   // Lakukan query ke database untuk menambahkan movie
-//   const query = `
-//       INSERT INTO movies (title, description, genre, year, poster, user_id)
-//       VALUES ($1, $2, $3, $4, $5, $6)
-//   `;
-//   const values = [title, description, genre, year, poster, userId];
+    // Tentukan status berdasarkan peran: jika admin, status adalah 'approved'
+    const status = req.user.role === 'admin' ? 'approved' : 'unapproved';
 
-//   db.query(query, values, (error, results) => {
-//       if (error) {
-//           console.error('Error adding movie:', error);
-//           return res.status(500).json({ success: false, message: 'Error adding movie' });
-//       }
-//       res.status(201).json({ success: true, message: 'Movie added successfully' });
-//   });
-// });
+    try {
+      await pool.query('BEGIN');
+
+      // Check if country exists in the database
+      let countryId;
+      const countryResult = await pool.query(`SELECT id_country FROM countries WHERE name = $1`, [country]);
+
+      if (countryResult.rows.length > 0) {
+        // Country exists, get the id_country
+        countryId = countryResult.rows[0].id_country;
+      } else {
+        // Country doesn't exist, insert new country and get the new id_country
+        const newCountryResult = await pool.query(
+          `INSERT INTO countries (name) VALUES ($1) RETURNING id_country`,
+          [country]
+        );
+        countryId = newCountryResult.rows[0].id_country;
+      }
+
+      const movieResult = await pool.query(
+        `INSERT INTO movies (title, alt_title, year, synopsis, trailer, poster, status, id_user)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         RETURNING id_movie`,
+        [title, altTitle, year, synopsis, trailer, poster, status, id_user]
+      );
+      const movieId = movieResult.rows[0].id_movie;
+
+      await pool.query(`INSERT INTO movie_countries (id_movie, id_country) VALUES ($1, $2)`, [movieId, countryId]);
+      
+      for (const genreId of genres) {
+        await pool.query(`INSERT INTO movie_genres (id_movie, id_genre) VALUES ($1, $2)`, [movieId, genreId]);
+      }
+
+      for (const actor of actors) {
+        await pool.query(`INSERT INTO movie_actors (id_movie, id_actor) VALUES ($1, $2)`, [movieId, actor.id_actor]);
+      }
+
+      await pool.query('COMMIT');
+      res.status(200).json({ success: true, message: 'Movie added successfully with ${status} status.' });
+
+    } catch (error) {
+      await pool.query('ROLLBACK');
+      console.error('Error adding movie:', error.message);
+      res.status(500).json({ success: false, message: 'Failed to add movie.' });
+    }
+  }
+);
+  
 
 app.get('/api/movies/title/:title', async (req, res) => {
   const { title } = req.params;
@@ -540,23 +612,15 @@ app.get('/api/movies/:id_movie/actors', async (req, res) => {
 });
 
 // Endpoint untuk menambah komentar
-app.post('/api/comments', async (req, res) => {
+app.post('/api/comments', authenticateToken, async (req, res) => {
   const { comment, rate, id_movie } = req.body;
 
-  // Dummy data: User Alice digunakan sebagai pengguna yang memberikan komentar
-  const dummyUsername = 'alice';
-
   try {
-    // Cari ID user berdasarkan username
-    const userResult = await pool.query('SELECT id_user FROM users WHERE username = $1', [dummyUsername]);
-    
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    // ID dan username pengguna dari token (dari middleware authenticateToken)
+    const id_user = req.user.id;  
+    const username = req.user.username;
 
-    const id_user = userResult.rows[0].id_user;
-
-    // Simpan komentar di database
+    // Simpan komentar di database dengan id_user yang sesuai
     const insertCommentQuery = `
       INSERT INTO comments (comment, rate, id_movie, id_user, status)
       VALUES ($1, $2, $3, $4, 'approved')
@@ -570,6 +634,7 @@ app.post('/api/comments', async (req, res) => {
     res.status(500).json({ message: 'Error adding comment' });
   }
 });
+
 
 // Endpoint untuk mengambil komentar berdasarkan film
 app.get('/api/movies/:id_movie/comments', async (req, res) => {
@@ -589,6 +654,7 @@ app.get('/api/movies/:id_movie/comments', async (req, res) => {
     res.status(500).json({ message: 'Error fetching comments' });
   }
 });
+
 
 //endpoint untuk data admin
 app.get('/api/admins', async (req, res) => {

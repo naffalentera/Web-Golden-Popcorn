@@ -16,8 +16,19 @@ function DetailPage() {
 
   useEffect(() => {
     const fetchMovieDetail = async () => {
+
+        const token = localStorage.getItem('UserToken'); // Ambil token dari localStorage
+  
+        console.log('Token dari localStorage:', token); // Debugging token
+       
         try {
-            const response = await fetch(`http://localhost:5000/api/movies/title/${title}`);
+            const response = await fetch(`http://localhost:5000/api/movies/title/${title}`, {
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Gunakan token yang benar
+              }
+            });
+            
             
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -70,7 +81,7 @@ const countryList = movies.countries && movies.countries.length > 0 ? movies.cou
   return (
     <div>
       <Header />
-      <div className="container mt-4">
+      <div className="container mt-6">
           {/* Title Section */}
           <div className="row justify-content-center">
             <div className="col-12 text-center">
@@ -151,13 +162,13 @@ const countryList = movies.countries && movies.countries.length > 0 ? movies.cou
           </div>
 
           {/* Review Section */}
-          <div className="mt-4">
+          <div className="mt-5">
             <div className="row justify-content-between">
               <div className="col-6 d-flex align-items-center">
                 <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '28px' }}>People think about this</h3>
               </div>
               <div className="col-6 d-flex justify-content-end align-items-center">
-                <StarDropdown />
+                {/* StarDropdown*/}
               </div>
             </div>
           </div>
