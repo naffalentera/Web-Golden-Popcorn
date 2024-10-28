@@ -12,8 +12,6 @@ const SearchPage = () => {
   const location = useLocation();
   const query = new URLSearchParams(location.search).get('query');  
   const [resetFilters, setResetFilters] = useState(false); // State baru untuk reset filter
-  const [currentPage, setCurrentPage] = useState(1);
-  const moviesPerPage = 20;
 
   // Fetch movies berdasarkan query pencarian
   useEffect(() => {

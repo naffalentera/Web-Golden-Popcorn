@@ -1,5 +1,6 @@
 import React, {  useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 function Sidebar() {
   const [activePage, setActivePage] = useState('');
@@ -22,14 +23,23 @@ function Sidebar() {
   };
 
   const handleLogoutConfirm = () => {
-    // Tampilkan kotak dialog konfirmasi
-    const confirmed = window.confirm('Are you sure you want to logout?');
-  
-    if (confirmed) {
-      // Jika pengguna mengonfirmasi, jalankan handleLogoutClick
-      handleLogoutClick();
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You will be logged out!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Jika pengguna mengonfirmasi, jalankan handleLogoutClick
+        handleLogoutClick();
+      }
+    });
   };
+  
 
   const handleLogoutClick = () => {
     localStorage.removeItem('token');
