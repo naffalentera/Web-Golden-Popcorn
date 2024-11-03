@@ -1,72 +1,83 @@
-import React, { useState } from "react";
-import { Modal, Button } from "react-bootstrap";
-// import ActorCard from '../../components/ActorCard';
+import React, { useState, useEffect } from "react"; 
+import { Button } from 'react-bootstrap';
 import Sidebar from '../../components/Sidebar';
+import EditMovieModal from '../../components/EditMovieModal';
 import '../../styles/detail.css';
+import Swal from 'sweetalert';
 
+const MovieValidate = () => {
 
-const Movie = () => {
-  console.log("Rendering Actor Component");
-  // Data dummy
-  const dataDummy = [
-    {
-      movie: "Movie A",
-      actors: ["Actor 1", "Actor 2"],
-      genres: ["Action", "Romance"],
-      sinopsis: "Ini adalah sinopsis singkat dari Drama A.",
-      status: "Approved",
-    },
-    {
-      movie: "Movie B",
-      actors: ["Actor 3", "Actor 4"],
-      genres: ["Drama", "Thriller"],
-      sinopsis: "Ini adalah sinopsis singkat dari Drama B.",
-      status: "unapproved",
-    },
-    {
-      movie: "Movie C",
-      actors: ["Actor 5", "Actor 6"],
-      genres: ["Comedy", "Adventure"],
-      sinopsis: "Ini adalah sinopsis singkat dari Drama C.",
-      status: "unapproved",
-    },
-  ];
-
-  const actors = [
-    { name: "Actor 1", imageUrl: "/images/contoh.png" },
-    { name: "Actor 2", imageUrl: "/images/contoh.png" },
-    { name: "Actor 3", imageUrl: "/images/contoh.png" },
-    { name: "Actor 4", imageUrl: "/images/contoh.png" },
-    { name: "Actor 5", imageUrl: "/images/contoh.png" },
-    { name: "Actor 6", imageUrl: "/images/contoh.png" },
-  ];
-
-  // State for filter, show and search
-  const [filter, setFilter] = useState("approved");
-  const [shows, setShows] = useState("10");
+  const [movies, setMovies] = useState([]);
+  const [actors, setActors] = useState([]); 
+  const [filter, setFilter] = useState("all");
+  const [shows, setShows] = useState("-1");
   const [search, setSearch] = useState("");
-
   const [showModal, setShowModal] = useState(false);
   const [currentMovie, setCurrentMovie] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Fetch movies from API
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/movies/validate');
+        if (!response.ok) {
+          throw new Error(`Error fetching movies, status: ${response.status}`);
+        }
+        const data = await response.json();
+        setMovies(data); // Update state with fetched data
+        
+        const actorResponse = await fetch(`http://localhost:5000/api/movies/validate/${data.id_movie}/actors`);
+        const actorData = await actorResponse.json();
+        console.log('Actors:', actorData);
+        setActors(actorData);  // Simpan data aktor ke state'
+
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      }
+    };
+
+    fetchMovies();
+  }, []);
+
+  // Fetch actors for selected movie
+  const fetchActors = async (movieId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/movies/${movieId}/actors`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch actors');
+      }
+      const actorData = await response.json();
+      return actorData;
+    } catch (error) {
+      console.error('Error fetching actors:', error);
+      return [];
+    }
+  };
 
   // Handle filter change
   const handleFilterChange = (e) => {
     setFilter(e.target.value);
+    setCurrentPage(1); 
   };
 
   // Handle shows change
   const handleShowsChange = (e) => {
-    setShows(e.target.value);
+    const selectedValue = Number(e.target.value);
+    setShows(selectedValue); // Convert to number
+    setCurrentPage(1); // Reset to page 1 on shows change
   };
 
   // Handle search change
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
+    setCurrentPage(1); 
   };
 
   // Handle click Edit
-  const handleEditClick = (movie) => {
-    setCurrentMovie(movie);
+  const handleEditClick = async (movie) => {
+    const actors = await fetchActors(movie.id_movie); // Fetch actors for selected movie
+    setCurrentMovie({ ...movie, actors }); // Set current movie with actors
     setShowModal(true);
   };
 
@@ -76,24 +87,118 @@ const Movie = () => {
     setCurrentMovie(null);
   };
 
-  // Filter and search data
-  const filteredData = dataDummy
-    .filter((item) => {
-      return item.movie.toLowerCase().includes(search.toLowerCase());
-    })
-    .slice(0, parseInt(shows)); // Limit number of items based on `shows`
+    // Handle approve movie
+  const handleApprove = async (movie) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/movies/${movie.id_movie}/approve`, {
+        method: 'PUT',
+      });
+  
+      if (response.ok) {
+        // Perbarui status film di state movies
+        setMovies((prevMovies) =>
+          prevMovies.map((m) =>
+            m.id_movie === movie.id_movie ? { ...m, status: 'approved' } : m
+          )
+        );
+        Swal("Movie approved successfully!", {
+          icon: "success",
+        });
+      } else {
+        Swal("Failed to approve movie", {
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.error('Error approving movie:', error);
+      Swal("Error approving movie", {
+        icon: "error",
+      });
+    }
+  
+    setShowModal(false);
+  };
+  
+  // handle hapus movie
+  const handleDelete = (movie) => {
+    Swal({
+      title: `Are you sure you want to delete "${movie.title}"?`,
+      icon: "warning",
+      buttons: ["Cancel", "Delete"],
+      dangerMode: true,
+    }).then(async (willDelete) => {
+      if (willDelete) {
+        try {
+          const response = await fetch(`http://localhost:5000/api/movies/${movie.id_movie}`, {
+            method: 'DELETE',
+          });
+  
+          if (response.ok) {
+            setMovies((prevMovies) => prevMovies.filter((m) => m.id_movie !== movie.id_movie));
+            Swal("Movie deleted successfully!", {
+              icon: "success",
+            });
+          } else {
+            Swal("Failed to delete movie", {
+              icon: "error",
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting movie:', error);
+        }
+      }
+    });
+  };
+
+
+
+  // Handle previous and next page
+  const handlePrevPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
+  };
+
+// Filter and search data
+const filteredData = movies
+  .filter((movie) => {
+    // Pastikan movie.status tidak null atau undefined
+    if (filter === "approved") {
+      return movie.status?.toLowerCase() === "approved";
+    } else if (filter === "unapproved") {
+      return movie.status?.toLowerCase() === "unapproved";
+    }
+    return true; // Default, tidak ada filter
+  })
+  .filter((movie) => {
+    // Pastikan movie.movie ada sebelum menggunakan toLowerCase
+    return movie.title?.toLowerCase().includes(search.toLowerCase());
+  })
+
+  // Calculate total pages based on filtered data and `shows` value
+  const totalPages = shows === -1 ? 1 : Math.ceil(filteredData.length / shows);
+
+  // Get data for the current page
+  const paginatedData = shows === -1 ? filteredData : filteredData.slice(
+    (currentPage - 1) * shows,
+    currentPage * shows
+  );
 
   return (
     <div className="container-box">
-      {/* Sidebar Section*/}
+      {/* Sidebar Section */}
       <aside id="filterAside">
         <Sidebar />
       </aside>
 
       <div className="content-box">
-        {/* Title Section*/}
+        {/* Title Section */}
         <div className="mt-4 mb-4">
-          <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '29px' }}>Validate Movie Data</h3>
+          <h3 style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '29px' }}>
+            Validate Movie Data
+          </h3>
         </div>
 
         {/* Filter section */}
@@ -109,6 +214,7 @@ const Movie = () => {
               value={filter}
               onChange={handleFilterChange}
             >
+              <option value="All">All</option>
               <option value="approved">Approved</option>
               <option value="unapproved">Unapproved</option>
             </select>
@@ -125,18 +231,14 @@ const Movie = () => {
               value={shows}
               onChange={handleShowsChange}
             >
-              <option value={dataDummy.length} selected>
-                All
-              </option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
+              <option value="-1">All</option>
+              <option value="30">30</option>
             </select>
           </div>
 
           <div className="col-12 col-lg-4 col-md-4 d-flex align-items-center mt-2">
             <label htmlFor="search" className="me-2">
-              Seacrh
+              Search
             </label>
             <input
               type="text"
@@ -155,7 +257,7 @@ const Movie = () => {
             <table className="table-box">
               <thead>
                 <tr>
-                  <th>Drama</th>
+                  <th>Title</th>
                   <th>Actors</th>
                   <th>Genres</th>
                   <th>Sinopsis</th>
@@ -164,27 +266,30 @@ const Movie = () => {
                 </tr>
               </thead>
               <tbody>
-                {/* Render filtered data */}
-                {filteredData.map((item, index) => (
+                {/* Render paginated data */}
+                {paginatedData.map((movie, index) => (
                   <tr key={index}>
-                    <td>{item.movie}</td>
-                    <td>{item.actors.join(", ")}</td>
-                    <td>{item.genres.join(", ")}</td>
-                    <td>{item.sinopsis}</td>
-                    <td>{item.status}</td>
+                    <td>{movie.title}</td>
+                    <td>{movie.actors.join(", ")}</td>
+                    <td>{movie.genres.join(", ")}</td>
+                    <td>{movie.synopsis}</td>
+                    <td>{movie.status}</td>
                     <td>
-                      <a
-                        href="#"
+                      <button
                         className="mx-2"
-                        onClick={() => handleEditClick(item)}
-                        style={{ color: "#0000FF" }} /* Teks edit dengan warna abu-abu tua */
+                        onClick={() => handleEditClick(movie)}
+                        style={{ color: "#0000FF", background: "none", border: "none", padding: "0", textDecoration: "underline", cursor: "pointer" }}
                       >
                         Edit
-                      </a>
+                      </button>
                       <span>|</span>
-                      <a href="#" className="mx-2" style={{ color: "#FF0000" }}>
+                      <button
+                        className="mx-2"
+                        onClick={() => handleDelete(movie)}
+                        style={{ color: "#FF0000", background: "none", border: "none", padding: "0", textDecoration: "underline", cursor: "pointer" }}
+                      >
                         Delete
-                      </a>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -192,108 +297,31 @@ const Movie = () => {
             </table>
           </div>
         </div>
+
+        {/* Pagination Controls - Show only if shows is not "All" */}
+        {shows !== -1 && (
+          <div className="d-flex justify-content-center gap-2 align-items-center mb-3">
+            <Button className="btn-golden" onClick={handlePrevPage} disabled={currentPage === 1}>
+              Previous
+            </Button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <Button className="btn-golden" onClick={handleNextPage} disabled={currentPage === totalPages}>
+              Next
+            </Button>
+          </div>
+        )}
       </div>
-      
+
       {/* Modal for Edit */}
-      {currentMovie && (
-        <Modal show={showModal} onHide={handleCloseModal} size="lg">
-          <Modal.Header closeButton className="justify-content-center">
-            <Modal.Title className="w-100 text-center">
-              <div className="d-flex justify-content-center">
-                <button
-                  className="btn text-white mx-2"
-                  style={{ backgroundColor: "#C6A628" }}
-                >
-                  Approve
-                </button>
-                <button className="btn btn-danger mx-2">Delete</button>
-              </div>
-            </Modal.Title>
-          </Modal.Header>
-
-          <Modal.Body>
-            <div className="row">
-              {/* Image Section */}
-              <div className="col-md-4">
-                <div
-                  className="drama-image mb-3"
-                  style={{
-                    backgroundImage: "url('/images/film.jpg')",
-                    height: "100%",
-                    width: "100%",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    borderRadius: "8px",
-                  }}
-                ></div>
-              </div>
-
-              {/* Drama Details Section */}
-              <div className="col-md-8">
-                <h2 className="drama-title">Title of the Drama</h2>
-                <p>
-                  <strong>Other Titles:</strong> Title 2, Title 3
-                </p>
-                <p>
-                  <strong>Year:</strong> Spring 2025
-                </p>
-                <p>
-                  <strong>Synopsis:</strong> Lorem ipsum dolor sit amet,
-                  consectetur adipiscing elit. Pellentesque varius velit eu
-                  velit facilisis, id fermentum mauris convallis.
-                </p>
-                <p>
-                  <strong>Writer:</strong> Writer Name
-                </p>
-                <p>
-                  <strong>Genre:</strong> Thriller
-                </p>
-                <p>
-                  <strong>Director:</strong> Director Name
-                </p>
-                <p>
-                  <strong>Rating:</strong> 9.5/10
-                </p>
-                <p>
-                  <strong>Availability:</strong> Netflix
-                </p>
-              </div>
-            </div>
-            <div className="row mt-2">
-              {actors.map((actor, index) => (
-                <div className="col-6 col-md-4 col-lg-3 mb-4" key={index}>
-                  <div className="card text-center h-100">
-                    <img
-                      src={actor.imageUrl}
-                      alt={`${actor.name}'s portrait`}
-                      className="card-img-top"
-                      style={{ height: "120px", objectFit: "cover" }}
-                    />
-                    <div className="card-body">
-                      <p className="card-text fw-bold">{actor.name}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                height: "50vh",
-              }}
-            >
-              <iframe
-                className="w-100 h-100 mt-2 rounded"
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                allowFullScreen
-                title="YouTube Video"
-              ></iframe>
-            </div>
-          </Modal.Body>
-        </Modal>
-      )}
+      <EditMovieModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        movie={currentMovie}
+        handleApprove={handleApprove}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 };
 
-export default Movie;
+export default MovieValidate;

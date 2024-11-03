@@ -152,6 +152,11 @@ app.post('/api/login', async (req, res) => {
 
     const user = result.rows[0];
 
+    // Cek apakah akun disuspend
+    if (user.is_suspended) {
+      return res.status(403).json({ success: false, message: 'Akun Anda sedang disuspend. Silakan hubungi admin.' });
+    }
+
     // Cek apakah password cocok dengan hashed password di database
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -675,3 +680,227 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// -------------------------------------------------------END POINT CMS------------------------------------------------------------- //
+
+//Endpoint CMS movie validate
+app.get('/api/movies/validate', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT movies.id_movie, movies.synopsis, movies.title, movies.status, movies.year, movies.trailer, movies.poster,
+       array_agg(DISTINCT genres.name) as genres, array_agg(DISTINCT actors.name) as actors
+       FROM movies
+       LEFT JOIN movie_genres ON movies.id_movie = movie_genres.id_movie
+       LEFT JOIN genres ON movie_genres.id_genre = genres.id_genre
+       LEFT JOIN movie_actors ON movies.id_movie = movie_actors.id_movie
+       LEFT JOIN actors ON movie_actors.id_actor = actors.id_actor
+       GROUP BY movies.id_movie`
+       );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching movies:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/movies/validate/:id_movie/actors', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT actors.name, actors.photo
+       FROM actors
+       JOIN movie_actors ON actors.id_actor = movie_actors.id_actor
+       WHERE movie_actors.id_movie = $1`, [id_movie]
+    );
+    
+    res.json(result.rows);
+  } catch (err) {
+    //console.error(err);
+    //res.status(500).send('Server Error');
+  }
+});
+
+// Endpoint untuk menghapus film berdasarkan id_movie
+app.delete('/api/movies/:id_movie', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    // Hapus film berdasarkan id_movie
+    await pool.query('DELETE FROM movies WHERE id_movie = $1', [id_movie]);
+
+    res.status(200).json({ message: 'Movie deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting movie:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk mengubah status film menjadi "approved"
+app.put('/api/movies/:id_movie/approve', async (req, res) => {
+  const { id_movie } = req.params;
+  try {
+    // Update status menjadi "approved"
+    await pool.query('UPDATE movies SET status = $1 WHERE id_movie = $2', ['approved', id_movie]);
+
+    res.status(200).json({ message: 'Movie approved successfully' });
+  } catch (err) {
+    console.error('Error approving movie:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+//Endpoint CMS actor
+app.get('/api/actors', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT actors.id_actor, actors.name, actors.photo FROM actors`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching actors:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk menghapus actor berdasarkan id
+app.delete('/api/actors/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM actors WHERE id_actor = $1 RETURNING *', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Actor not found' });
+    }
+
+    res.json({ message: 'Actor deleted successfully', actor: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting actor:', err);
+    res.status(500).json({ message: 'Server error' });x
+  }
+
+});// Endpoint menambahkan aktor baru
+app.post('/api/actors', async (req, res) => {
+  try {
+    const { name, photo } = req.body; // Destructure name and photo from the request body
+
+    // Validate that name and photo are provided
+    if (!name || !photo) {
+      return res.status(400).json({ message: 'Name and photo are required' });
+    }
+
+    // Insert the new actor into the database
+    const result = await pool.query(
+      'INSERT INTO actors (name, photo) VALUES ($1, $2) RETURNING *',
+      [name, photo]
+    );
+
+    // Respond with the newly created actor
+    res.status(201).json({
+      message: 'Actor added successfully',
+      actor: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Error adding new actor:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk update data actor
+app.put('/api/actors/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, photo } = req.body;
+
+    // Check if at least one of the fields (name or photo) is provided
+    if (!name && !photo) {
+      return res.status(400).json({ message: 'Name or photo is required' });
+    }
+
+    // Dynamically build the SET clause based on provided fields
+    const fields = [];
+    const values = [];
+    let query = 'UPDATE actors SET ';
+
+    if (name) {
+      fields.push('name = $' + (fields.length + 1));
+      values.push(name);
+    }
+    if (photo) {
+      fields.push('photo = $' + (fields.length + 1));
+      values.push(photo);
+    }
+
+    query += fields.join(', ') + ' WHERE id_actor = $' + (fields.length + 1) + ' RETURNING *';
+    values.push(id);
+
+    // Execute the query
+    const result = await pool.query(query, values);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Actor not found' });
+    }
+
+    res.json({
+      message: 'Actor updated successfully',
+      actor: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Error updating actor:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+//Endpoint CMS Users
+app.get('/api/user', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id_user, username, email, role 
+       FROM users 
+       WHERE role = 'user'`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching actors:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk menghapus users berdasarkan id
+app.delete('/api/user/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM users WHERE id_user = $1 RETURNING *', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'user deleted successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ message: 'Server error' });x
+  }
+  });
+
+// Endpoint untuk mengubah status suspend pengguna
+app.put('/api/user/suspend/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Dapatkan status is_suspended saat ini
+    const user = await pool.query('SELECT is_suspended FROM users WHERE id_user = $1', [id]);
+    if (user.rowCount === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    // Toggle status suspend
+    const isSuspended = !user.rows[0].is_suspended;
+    const result = await pool.query('UPDATE users SET is_suspended = $1 WHERE id_user = $2 RETURNING *', [isSuspended, id]);
+
+    res.json(result.rows[0]);  // Kirim user langsung tanpa nesting "user" lagi
+  } catch (err) {
+    console.error('Error updating user suspension:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
