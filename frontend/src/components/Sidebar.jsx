@@ -76,9 +76,9 @@ function Sidebar() {
         <li className={`nav-item ${activePage === '/countries' ? 'active' : ''}`} onClick={() => handleMenuClick('/countries')}>
           <a className="nav-link" href="/countries">Countries</a>
         </li>
-        <li className={`nav-item ${activePage === '/awards' ? 'active' : ''}`} onClick={() => handleMenuClick('/awards')}>
+        {/* <li className={`nav-item ${activePage === '/awards' ? 'active' : ''}`} onClick={() => handleMenuClick('/awards')}>
           <a className="nav-link" href="/awards">Awards</a>
-        </li>
+        </li> */}
         <li className={`nav-item ${activePage === '/genres' ? 'active' : ''}`} onClick={() => handleMenuClick('/genres')}>
           <a className="nav-link" href="/genres">Genres</a>
         </li>

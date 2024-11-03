@@ -412,21 +412,6 @@ app.get('/api/countries', async (req, res) => {
   }
 });
 
-app.get('/api/actors', async (req, res) => {
-  const { name } = req.query; // Ambil nama dari query parameter
-
-  try {
-    const result = await pool.query(
-      'SELECT id_actor, name, photo FROM actors WHERE name ILIKE $1 LIMIT 10',
-      [`%${name}%`]
-    );
-    res.json(result.rows); // Kembalikan hasil pencarian dalam bentuk JSON
-  } catch (error) {
-    console.error('Error fetching actors:', error.message);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 // ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 // Watchlist
 
@@ -435,8 +420,8 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];  // Ambil header Authorization
   const token = authHeader && authHeader.split(' ')[1];  // Ekstrak token dari header
 
-  console.log('Authorization Header:', authHeader);
-  console.log('Extracted Token:', token);
+  // console.log('Authorization Header:', authHeader);
+  // console.log('Extracted Token:', token);
 
   if (token == null) return res.status(401).json({ message: 'Token is missing' });  // Jika tidak ada token, kirim Unauthorized
 
@@ -516,7 +501,6 @@ app.post('/api/movie/add', authenticateToken,
     }
 
     const { title, altTitle, year, country, synopsis, genres, actors, trailer, poster } = req.body;
-    console.log("Genre IDs received:", genres);
     const id_user = req.user.id; // Ambil id_user dari token
 
     // Tentukan status berdasarkan peran: jika admin, status adalah 'approved'
@@ -968,6 +952,21 @@ app.delete('/api/comments/:id', async (req, res) => {
   } catch (err) {
     console.error('Error deleting comment:', err.message);
     res.status(500).json({ message: 'Error deleting comment' });
+  }
+});
+
+app.get('/api/actors/search', async (req, res) => {
+  const { name } = req.query; // Ambil nama dari query parameter
+
+  try {
+    const result = await pool.query(
+      'SELECT id_actor, name, photo FROM actors WHERE name ILIKE $1 LIMIT 10',
+      [`%${name}%`]
+    );
+    res.json(result.rows); // Kembalikan hasil pencarian dalam bentuk JSON
+  } catch (error) {
+    console.error('Error fetching actors:', error.message);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

@@ -81,7 +81,7 @@ const MovieGrid = ({ movies }) => {
                                         Add Watchlist
                                     </button>
                                     <button 
-                                        className="btn btn-clear" 
+                                        className="btn-red" 
                                         onClick={() => window.open(movie.trailer, '_blank')}
                                     >
                                         Trailer

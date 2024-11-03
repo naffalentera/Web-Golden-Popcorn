@@ -87,8 +87,19 @@ const Comments = () => {
       setComments(updatedComments); // Update comments in state with the latest data
   
       setSelectedComments([]); // Reset selected comments
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Approved!',
+        text: 'Selected comments have been successfully approved.',
+      });
     } catch (error) {
       console.error("Error approving comments:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Approval Failed',
+          text: `An error occurred while approving comments: ${error.message}`,
+        });
     }
   };
   
@@ -168,9 +179,9 @@ const Comments = () => {
               className="form-select"
               onChange={(e) => setShowCount(e.target.value)}
             >
-              <option value={5}>5</option>
               <option value={10}>10</option>
-              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
             </select>
           </div>
 
