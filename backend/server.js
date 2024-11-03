@@ -562,7 +562,7 @@ app.post('/api/comments', authenticateToken, async (req, res) => {
     // Simpan komentar di database dengan id_user yang sesuai
     const insertCommentQuery = `
       INSERT INTO comments (comment, rate, id_movie, id_user, status)
-      VALUES ($1, $2, $3, $4, 'approved')
+      VALUES ($1, $2, $3, $4, 'unapproved')
       RETURNING *;
     `;
     const result = await pool.query(insertCommentQuery, [comment, rate, id_movie, id_user]);

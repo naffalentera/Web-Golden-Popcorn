@@ -10,7 +10,7 @@ const MovieValidate = () => {
   const [movies, setMovies] = useState([]);
   const [actors, setActors] = useState([]); 
   const [filter, setFilter] = useState("all");
-  const [shows, setShows] = useState("-1");
+  const [shows, setShows] = useState("15");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [currentMovie, setCurrentMovie] = useState(null);
@@ -231,7 +231,7 @@ const filteredData = movies
               value={shows}
               onChange={handleShowsChange}
             >
-              <option value="-1">All</option>
+              <option value="15">15</option>
               <option value="30">30</option>
             </select>
           </div>
