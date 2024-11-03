@@ -1,18 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import Sidebar from '../../components/Sidebar';
-import '../../styles/Actor.css';
 import '../../styles/detail.css';
-import Modal from "react-bootstrap/Modal"; // Import React Bootstrap Modal
+import Swal from 'sweetalert';
 
 const Users = () => {
   const [newUser, setNewUser] = useState({ username: "", email: "" });
-  const [users, setUsers] = useState([
-    { username: "anita1", email: "anita@gmail.com", firstEmailSent: false },
-    { username: "borang", email: "bora@yahoo.com", firstEmailSent: false },
-    // Add more users as needed
-  ]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
+
+  // Fetch users data from the backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/user`);
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        setUsers(data);// Update state dengan data aktor dari backend
+        console.log("Fetched users:", data); // Debugging
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -27,35 +37,57 @@ const Users = () => {
     }
   };
 
-  // Send first email
-  const handleSendFirstEmail = (user) => {
-    const updatedUsers = users.map((u) =>
-      u === user ? { ...u, firstEmailSent: true } : u
-    );
-    setUsers(updatedUsers);
-    alert(`First email sent to ${user.email}`);
-  };
+// Fungsi untuk mengubah status suspend
+const handleSuspend = async (user) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/user/suspend/${user.id_user}`, {
+      method: 'PUT',
+    });
+    
+    if (response.ok) {
+      const updatedUser = await response.json();
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => u.id_user === user.id_user ? { ...u, is_suspended: !u.is_suspended } : u)
+      );
+      Swal(`User ${updatedUser.user.is_suspended ? 'disuspend' : 'di-unsuspend'} dengan sukses`, { icon: "success" });
+    } else {
+      const errorData = await response.json();
+      Swal(errorData.message || "Gagal mengubah status suspend", { icon: "error" });
+    }
+  } catch (error) {
+    console.error('Error suspending user:', error);
+    Swal("Gagal mengubah status suspend. Coba lagi.", { icon: "error" });
+  }
+};
 
-  // Show modal and set selected user for editing
-  const handleEditClick = (user) => {
-    setSelectedUser(user);
-    setShowModal(true);
-  };
-
-  // Close modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedUser(null);
-  };
-
-  // Save changes made to the user
-  const handleSaveChanges = () => {
-    const updatedUsers = users.map((user) =>
-      user === selectedUser ? { ...user, ...selectedUser } : user
-    );
-    setUsers(updatedUsers);
-    handleCloseModal();
-  };
+  // Fungsi untuk menghapus user dengan konfirmasi SweetAlert
+  const handleDeleteUser = (user) => {
+    Swal({
+      title: `Are you sure you want to delete "${user.username}"?`,
+      icon: "warning",
+      buttons: ["Cancel", "Delete"],
+      dangerMode: true,
+    }).then(async (willDelete) => {
+      if (willDelete) {
+        try {
+          const response = await fetch(`http://localhost:5000/api/user/${user.id_user}`, {
+            method: 'DELETE',
+          });
+  
+          if (response.ok) {
+            setUsers((prevUsers) => prevUsers.filter((u) => u.id_user !== user.id_user));
+            Swal("User deleted successfully!", { icon: "success" });
+          } else {
+            const errorData = await response.json();
+            Swal(errorData.message || "Failed to delete user", { icon: "error" });
+          }
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          Swal("Failed to delete user. Try again.", { icon: "error" });
+        }
+      }
+    });
+  };  
 
   return (
     <div className="container-box">
@@ -118,7 +150,6 @@ const Users = () => {
           <table className="table-box">
             <thead>
               <tr>
-                <th>No</th> {/* Kolom No */}
                 <th>Username</th>
                 <th>Email</th>
                 <th>Actions</th>
@@ -127,37 +158,36 @@ const Users = () => {
             <tbody>
               {users.map((user, index) => (
                 <tr key={index}>
-                  <td>{index + 1}</td> {/* Menampilkan nomor urut */}
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>
-                    {!user.firstEmailSent ? (
-                      <a
-                        href="#"
-                        className="text-primary me-2"
-                        onClick={() => handleSendFirstEmail(user)}
-                      >
-                        Send first email
-                      </a>
-                    ) : (
-                      <span className="text-muted me-2">Email sent</span>
-                    )}
-                    <span>| </span>
-                    <a
-                      href="#"
-                      className="text-primary me-2"
-                      onClick={() => handleEditClick(user)}
+                      <button
+                      onClick={() => handleSuspend(user)}
+                      style={{
+                        color: user.is_suspended ? "#008000" : "#FF0000", // Hijau untuk unsuspend, Merah untuk suspend
+                        background: "none",
+                        border: "none",
+                        padding: "0",
+                        textDecoration: "underline",
+                        cursor: "pointer"
+                      }}
                     >
-                      Edit
-                    </a>
-                    <span>| </span>
-                    <a
-                      href="#"
-                      className="text-danger"
-                      onClick={() => setUsers(users.filter(u => u !== user))}
+                      {user.is_suspended ? "Unsuspend" : "Suspend"}
+                    </button>
+                    <span> | </span>
+                    <button
+                      onClick={() => handleDeleteUser(user)}
+                      style={{
+                        color: "#FF0000",
+                        background: "none",
+                        border: "none",
+                        padding: "0",
+                        textDecoration: "underline",
+                        cursor: "pointer"
+                      }}
                     >
                       Delete
-                    </a>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -165,53 +195,6 @@ const Users = () => {
           </table>
         </div>
       </div>
-
-      {/* Modal for Editing User */}
-      <Modal show={showModal} onHide={handleCloseModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit User</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <form>
-            <div className="mb-3">
-              <label htmlFor="editUsername" className="form-label">
-                Username
-              </label>
-              <input
-                type="text"
-                id="editUsername"
-                className="form-control"
-                value={selectedUser?.username || ""}
-                onChange={(e) =>
-                  setSelectedUser({ ...selectedUser, username: e.target.value })
-                }
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="editEmail" className="form-label">
-                Email
-              </label>
-              <input
-                type="text"
-                id="editEmail"
-                className="form-control"
-                value={selectedUser?.email || ""}
-                onChange={(e) =>
-                  setSelectedUser({ ...selectedUser, email: e.target.value })
-                }
-              />
-            </div>
-          </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <button className="btn btn-secondary" onClick={handleCloseModal}>
-            Close
-          </button>
-          <button className="btn btn-primary" onClick={handleSaveChanges}>
-            Save Changes
-          </button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 };

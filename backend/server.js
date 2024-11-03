@@ -152,6 +152,11 @@ app.post('/api/login', async (req, res) => {
 
     const user = result.rows[0];
 
+    // Cek apakah akun disuspend
+    if (user.is_suspended) {
+      return res.status(403).json({ success: false, message: 'Akun Anda sedang disuspend. Silakan hubungi admin.' });
+    }
+
     // Cek apakah password cocok dengan hashed password di database
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -778,3 +783,58 @@ app.put('/api/actors/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+//Endpoint CMS Users
+app.get('/api/user', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id_user, username, email, role 
+       FROM users 
+       WHERE role = 'user'`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching actors:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Endpoint untuk menghapus users berdasarkan id
+app.delete('/api/user/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM users WHERE id_user = $1 RETURNING *', [id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ message: 'user deleted successfully', user: result.rows[0] });
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ message: 'Server error' });x
+  }
+  });
+
+// Endpoint untuk mengubah status suspend pengguna
+app.put('/api/user/suspend/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Dapatkan status is_suspended saat ini
+    const user = await pool.query('SELECT is_suspended FROM users WHERE id_user = $1', [id]);
+    if (user.rowCount === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    // Toggle status suspend
+    const isSuspended = !user.rows[0].is_suspended;
+    const result = await pool.query('UPDATE users SET is_suspended = $1 WHERE id_user = $2 RETURNING *', [isSuspended, id]);
+
+    res.json(result.rows[0]);  // Kirim user langsung tanpa nesting "user" lagi
+  } catch (err) {
+    console.error('Error updating user suspension:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
