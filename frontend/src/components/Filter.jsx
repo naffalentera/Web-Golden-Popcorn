@@ -135,7 +135,7 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
                 
                 {/* Submit and Clear Buttons */}
                 <button id="submit" type="submit" className="btn btn-golden w-100 mb-2" onClick={submitFilters}>Submit</button>
-                <button id="clear" className="btn btn-clear w-100" onClick={clearFilters}>Clear</button>
+                <button id="clear" className="btn-red w-100" onClick={clearFilters}>Clear</button>
             </div>
         </aside>
     );

@@ -91,8 +91,8 @@ function Sidebar() {
         <li className={`nav-item ${activePage === '/users' ? 'active' : ''}`} onClick={() => handleMenuClick('/users')}>
           <a className="nav-link" href="/users">Users</a>
         </li>
-        <li className="nav-item">
-          <a className="nav-link" onClick={handleLogoutConfirm}>Logout</a>
+        <li className="nav-item" onClick={handleLogoutConfirm}>
+          <a className="nav-link" href="#">Logout</a>
         </li>
       </ul>
     </div>

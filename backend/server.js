@@ -623,7 +623,7 @@ app.post('/api/comments', authenticateToken, async (req, res) => {
     // Simpan komentar di database dengan id_user yang sesuai
     const insertCommentQuery = `
       INSERT INTO comments (comment, rate, id_movie, id_user, status)
-      VALUES ($1, $2, $3, $4, 'approved')
+      VALUES ($1, $2, $3, $4, 'unapproved')
       RETURNING *;
     `;
     const result = await pool.query(insertCommentQuery, [comment, rate, id_movie, id_user]);
@@ -743,3 +743,71 @@ app.put('/api/movies/:id_movie/approve', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Endpoint untuk mengambil semua komentar dengan username dan judul film
+app.get('/api/comments', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        comments.id_comment,
+        users.username,
+        movies.title AS movie,
+        comments.rate,
+        comments.comment,
+        comments.status
+      FROM 
+        comments
+      JOIN 
+        users ON comments.id_user = users.id_user
+      JOIN 
+        movies ON comments.id_movie = movies.id_movie;
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching comments with details:', err.message);
+    res.status(500).json({ message: 'Error fetching comments with details' });
+  }
+});
+
+app.put('/api/comments/:id/approve', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `UPDATE comments SET status = 'approved' WHERE id_comment = $1 RETURNING *;`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating comment status:', err.message);
+    res.status(500).json({ message: 'Error updating comment status' });
+  }
+});
+
+app.delete('/api/comments/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM comments WHERE id_comment = $1 RETURNING *;`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    res.json({ message: 'Comment deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting comment:', err.message);
+    res.status(500).json({ message: 'Error deleting comment' });
+  }
+});
+
+
