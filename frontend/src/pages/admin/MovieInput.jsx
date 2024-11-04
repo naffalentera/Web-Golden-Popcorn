@@ -41,7 +41,7 @@ const MovieInputPage = () => {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/genres'); // Ganti URL jika berbeda
+        const response = await fetch('http://localhost:5000/api/genres/add-movie'); // Ganti URL jika berbeda
         const data = await response.json();
         setGenres(data); // Set data genre dari API
         console.log("Fetched genres:", data);
@@ -61,7 +61,7 @@ const MovieInputPage = () => {
 
     const fetchActors = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/actors/search?name=${searchTerm}`);
+        const response = await fetch(`http://localhost:5000/api/actors/add-movie?name=${searchTerm}`);
         const data = await response.json();
         setSearchResults(data); // Simpan hasil pencarian di state
         console.log('Fetched Actors:', data);
