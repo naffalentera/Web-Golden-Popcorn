@@ -16,7 +16,7 @@ function DetailPage() {
   useEffect(() => {
     const fetchMovieDetail = async () => {
 
-        const token = localStorage.getItem('UserToken'); // Ambil token dari localStorage
+        const token = sessionStorage.getItem('UserToken'); // Ambil token dari sessionStorage
        
         try {
             const response = await fetch(`http://localhost:5000/api/movies/title/${title}`, {

@@ -1,0 +1,260 @@
+[33mcommit fa78fd1935f0861471e029fc05adce7b92a65aa4[m[33m ([m[1;36mHEAD -> [m[1;32mrahma[m[33m)[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Nov 3 18:18:41 2024 +0700
+
+    fix error
+
+[33mcommit f9e84c64c900086c13dab31a98c71459c1bca18b[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Nov 3 12:53:20 2024 +0700
+
+    resolve conflict merging
+
+[33mcommit 57d411954dce27f81b76090440ab80538e122891[m
+Merge: bd0fae8 401bdfa
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Nov 3 12:46:26 2024 +0700
+
+    resolve conflict merging cms users
+
+[33mcommit 401bdfaaf8d6804a5ba7348c4625335e68c01762[m[33m ([m[1;31morigin/rahma[m[33m)[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Nov 3 12:32:03 2024 +0700
+
+    finish cms users with feature delete and suspend user
+
+[33mcommit 33e95a4df8eff5b090df2cc6dea410ff883f36af[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Fri Nov 1 23:30:58 2024 +0700
+
+    add cms actor with feauture add new actor, update data, nad delete
+
+[33mcommit bd0fae8f5a0bc6d7c6d49d8f965a1b0325ffe1d5[m
+Merge: 11d5560 2641cfa
+Author: naffalentera <117516200+naffalentera@users.noreply.github.com>
+Date:   Mon Oct 28 12:53:26 2024 +0700
+
+    Merge pull request #7 from RahmaDivina/naffa
+    
+    Naffa
+
+[33mcommit 2641cfa96f206c18db9f801f8471e31f495adc75[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Mon Oct 28 11:58:07 2024 +0700
+
+    fix error input movie
+
+[33mcommit 24b7790ddfc4e89e3722e45c502d6ebd14e639d5[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Mon Oct 28 11:45:38 2024 +0700
+
+    menyelesaikan cms movie validate
+
+[33mcommit 02d775d5515dc061f55f588006680e73e2ef69c8[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Mon Oct 28 02:16:50 2024 +0700
+
+    add movie admin and user done
+
+[33mcommit 50c07339d42d49315b940a3150f9bb6db60cc81f[m
+Merge: 1e373e4 564f8b2
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Oct 27 10:18:56 2024 +0700
+
+    token belum kebaca
+
+[33mcommit 1e373e44a7c27994a7643e715319f96e5a58854e[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Oct 27 10:09:48 2024 +0700
+
+    token belum kebaca
+
+[33mcommit 564f8b2ce93696bb09657d1d7dea6ff83ab2e445[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Oct 20 14:32:15 2024 +0700
+
+    resolve duplicate data, resolve comment feature, resolve rating
+
+[33mcommit 11d55602aa2ff544c26ba442ba9eb2a6617d04c7[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Mon Oct 14 07:45:11 2024 +0700
+
+    new db, hapus awards
+
+[33mcommit fc01f5577a17f902136c4eeb83827393fc5c4c4b[m
+Merge: d62c1a9 1ca4df7
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Mon Oct 14 06:08:12 2024 +0700
+
+    Merge branch 'master' of https://github.com/RahmaDivina/Web-Golden-Popcorn into rahma
+
+[33mcommit d62c1a91d21c09e283b1523f1ca7fc4d33dcbc15[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Mon Oct 14 00:26:48 2024 +0700
+
+    edit country dan rating
+
+[33mcommit 1ca4df7dd36e4ec10ba0e0b73515bbba93bdfaf8[m
+Merge: b12d00a bd2cf2f
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Oct 13 12:13:25 2024 +0700
+
+    Resolved merge conflicts
+
+[33mcommit b12d00a2ece29006830ea315bb28898a7490a0ee[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Oct 13 12:04:47 2024 +0700
+
+    watchlist belum beres
+
+[33mcommit bd2cf2f6510690dc838b9666947483592d2b25da[m
+Merge: bcf87ae 26b826b
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Oct 13 11:59:36 2024 +0700
+
+    Merge branch 'master' of https://github.com/RahmaDivina/Web-Golden-Popcorn
+
+[33mcommit 8f446b0e339f9057bb91a6037a5c905a379d06f1[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sat Oct 12 22:37:10 2024 +0700
+
+    email verification, reset password done
+
+[33mcommit bcf87ae62f48c19e582c45c1b1893777155b6156[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sun Oct 6 10:55:56 2024 +0700
+
+    add dashboard for admin
+
+[33mcommit 26b826b5182c68e43a9b03aa98394d47af2a0671[m
+Merge: 37c5aa0 715b198
+Author: RahmaDivina <117638470+RahmaDivina@users.noreply.github.com>
+Date:   Sat Oct 5 19:19:43 2024 +0700
+
+    Merge pull request #6 from RahmaDivina/rahma
+    
+    Rahma
+
+[33mcommit 270fce80d826e30df5cae134aab7c026fce022d0[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sat Oct 5 19:09:57 2024 +0700
+
+    nyatuin yg rahma
+
+[33mcommit 715b198fed05df3b19725a23cd183cce0d4d630c[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Sat Oct 5 18:48:32 2024 +0700
+
+    display actors from db and add comments feature
+
+[33mcommit 462fa15d1dcccfaad33826507af94d03af607e5e[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sat Oct 5 19:01:09 2024 +0700
+
+    nyatuin yg muti
+
+[33mcommit c8bb0841ec7cb22980e4bb22ebed35b7e14aa4fb[m
+Merge: 9c71eb7 0f94c70
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sat Oct 5 18:58:52 2024 +0700
+
+    Merge branch 'rahPlease enter a commit message to explain why this merge is necessary,
+
+[33mcommit 9c71eb77a5190242f6654d0229542fbfcef2fb4d[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sat Oct 5 18:58:43 2024 +0700
+
+    rute user admin
+
+[33mcommit 5017fff86f217984884f59840082dfe427b2384a[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sat Oct 5 14:47:08 2024 +0700
+
+    login authentication done
+
+[33mcommit bd9bc055fc4b96ed5dbc717efffecfe1573e4d1f[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Fri Oct 4 23:28:35 2024 +0700
+
+    register authentication done
+
+[33mcommit f46204d53ac3b1a8c39717ce7c69b5239422407f[m
+Merge: 654e570 f368840
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Mon Sep 30 13:38:25 2024 +0700
+
+    Merge branch 'rahPlease enter a commit message to explain why this merge is necessary,
+
+[33mcommit 654e570c9beb20a3bff6c00ba439f078ac2e8351[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Mon Sep 30 13:38:20 2024 +0700
+
+    Memperbaiki file server.js
+
+[33mcommit e92b49ec5c55d36e7f9783d7676382381ca80c71[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Mon Sep 30 13:33:56 2024 +0700
+
+    input validation
+
+[33mcommit f36884014181c53e48fcce15720921481e1bdbff[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Mon Sep 30 13:32:19 2024 +0700
+
+    benerin error link yt dan genre
+
+[33mcommit 0f94c70c61a97975c2707bd1ed9d4ef6ac0f2735[m
+Merge: c77af46 37c5aa0
+Author: MutiaraDwiSalma <mutiaraads07@gmail.com>
+Date:   Mon Sep 30 10:29:13 2024 +0700
+
+    Merge branch 'master' of https://github.com/RahmaDivina/Web-Golden-Popcorn into muti
+
+[33mcommit f016d96698eb41efe53bd239df8077ce504555f8[m
+Merge: 00f27a0 37c5aa0
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Mon Sep 30 10:19:49 2024 +0700
+
+    Selesaikan konflik merge di Detail.jsx
+
+[33mcommit c77af461566b98b4c8441ea69508cefd13f02a57[m
+Author: MutiaraDwiSalma <mutiaraads07@gmail.com>
+Date:   Mon Sep 30 10:19:10 2024 +0700
+
+    nambah cms
+
+[33mcommit 00f27a089c2168f208ddc113690ac76884380067[m
+Author: RahmaDivina <rahma.divina.tif422@polban.ac.id>
+Date:   Mon Sep 30 10:12:45 2024 +0700
+
+    perbaiki error link youtube
+
+[33mcommit 37c5aa066b3b2562187651fa7309065697b3d0b5[m
+Merge: 12e01ae 0458589
+Author: naffalentera <117516200+naffalentera@users.noreply.github.com>
+Date:   Sun Sep 29 22:12:26 2024 +0700
+
+    Merge pull request #5 from RahmaDivina/naffa
+    
+    Naffa
+
+[33mcommit 045858926d909278ca7431732f0c2217c495c818[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Sep 29 22:10:53 2024 +0700
+
+    backend home
+
+[33mcommit 890f8927a5e978ce2a8f21d39bdbd04ef66ec983[m
+Merge: ba3efde bd141a1
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Sep 29 20:06:22 2024 +0700
+
+    benerin detail
+
+[33mcommit ba3efde7c476485b8c2c311489de7483e5eccfe8[m
+Author: naffalentera <naffalenteranisa@gmail.com>
+Date:   Sun Sep 29 18:58:35 2024 +0700
+
+    ganti default poster
+
+[33mcommit bd141a1ffa5a6459f8510323a60fdb8a45adfe7e

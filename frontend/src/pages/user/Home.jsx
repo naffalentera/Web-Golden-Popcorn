@@ -23,8 +23,8 @@ const HomePage = () => {
 
 
     if (token) {
-      // Simpan token di localStorage
-      localStorage.setItem('UserToken', token);
+      // Simpan token di sessionStorage
+      sessionStorage.setItem('UserToken', token);
 
       // Setelah menyimpan token, hilangkan query parameter dari URL
       window.location.href = 'http://localhost:3000/home'; // Redirect tanpa query parameters

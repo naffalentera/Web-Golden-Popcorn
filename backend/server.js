@@ -391,42 +391,6 @@ app.get('/api/movies/all', (req, res) => handleMoviesRequest(req, res, false));
 // API endpoint untuk mendapatkan film berdasarkan query di search page
 app.get('/api/movies', (req, res) => handleMoviesRequest(req, res, true));
 
-
-app.get('/api/genres', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM genres ORDER BY name');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-app.get('/api/countries', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT name FROM countries ORDER BY name');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
-app.get('/api/actors', async (req, res) => {
-  const { name } = req.query; // Ambil nama dari query parameter
-
-  try {
-    const result = await pool.query(
-      'SELECT id_actor, name, photo FROM actors WHERE name ILIKE $1 LIMIT 10',
-      [`%${name}%`]
-    );
-    res.json(result.rows); // Kembalikan hasil pencarian dalam bentuk JSON
-  } catch (error) {
-    console.error('Error fetching actors:', error.message);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 // ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 // Watchlist
 
@@ -435,8 +399,8 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];  // Ambil header Authorization
   const token = authHeader && authHeader.split(' ')[1];  // Ekstrak token dari header
 
-  console.log('Authorization Header:', authHeader);
-  console.log('Extracted Token:', token);
+  // console.log('Authorization Header:', authHeader);
+  // console.log('Extracted Token:', token);
 
   if (token == null) return res.status(401).json({ message: 'Token is missing' });  // Jika tidak ada token, kirim Unauthorized
 
@@ -516,7 +480,6 @@ app.post('/api/movie/add', authenticateToken,
     }
 
     const { title, altTitle, year, country, synopsis, genres, actors, trailer, poster } = req.body;
-    console.log("Genre IDs received:", genres);
     const id_user = req.user.id; // Ambil id_user dari token
 
     // Tentukan status berdasarkan peran: jika admin, status adalah 'approved'
@@ -628,7 +591,7 @@ app.post('/api/comments', authenticateToken, async (req, res) => {
     // Simpan komentar di database dengan id_user yang sesuai
     const insertCommentQuery = `
       INSERT INTO comments (comment, rate, id_movie, id_user, status)
-      VALUES ($1, $2, $3, $4, 'approved')
+      VALUES ($1, $2, $3, $4, 'unapproved')
       RETURNING *;
     `;
     const result = await pool.query(insertCommentQuery, [comment, rate, id_movie, id_user]);
@@ -903,4 +866,273 @@ app.put('/api/user/suspend/:id', async (req, res) => {
     res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
+
+
+// Endpoint untuk mengambil semua komentar dengan username dan judul film
+app.get('/api/comments', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        comments.id_comment,
+        users.username,
+        movies.title AS movie,
+        comments.rate,
+        comments.comment,
+        comments.status
+      FROM 
+        comments
+      JOIN 
+        users ON comments.id_user = users.id_user
+      JOIN 
+        movies ON comments.id_movie = movies.id_movie;
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching comments with details:', err.message);
+    res.status(500).json({ message: 'Error fetching comments with details' });
+  }
+});
+
+app.put('/api/comments/:id/approve', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `UPDATE comments SET status = 'approved' WHERE id_comment = $1 RETURNING *;`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating comment status:', err.message);
+    res.status(500).json({ message: 'Error updating comment status' });
+  }
+});
+
+app.delete('/api/comments/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM comments WHERE id_comment = $1 RETURNING *;`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    res.json({ message: 'Comment deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting comment:', err.message);
+    res.status(500).json({ message: 'Error deleting comment' });
+  }
+});
+
+app.get('/api/actors/add-movie', async (req, res) => {
+  const { name } = req.query; // Ambil nama dari query parameter
+
+  try {
+    const result = await pool.query(
+      'SELECT id_actor, name, photo FROM actors WHERE name ILIKE $1 LIMIT 10',
+      [`%${name}%`]
+    );
+    res.json(result.rows); // Kembalikan hasil pencarian dalam bentuk JSON
+  } catch (error) {
+    console.error('Error fetching actors:', error.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/genres/add-movie', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM genres ORDER BY name');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+//Endpoint untuk cms countries
+app.get('/api/countries', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM countries ORDER BY name');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Add a new country
+app.post('/api/countries', async (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ message: 'Country name is required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO countries (name) VALUES ($1) RETURNING *',
+      [name]
+   );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding country:', error);
+    res.status(500).json({ message: 'Failed to add country' });
+  }
+});
+
+
+// Endpoint untuk mengupdate data country
+app.put('/api/countries/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  // Konversi id menjadi integer
+  const countryId = parseInt(id, 10);
+  if (isNaN(countryId) || !name) {
+    return res.status(400).json({ message: 'Valid ID and name are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE countries SET name = $1 WHERE id_country = $2 RETURNING *',
+      [name, countryId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Country not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating country:', error);
+    res.status(500).json({ message: 'Failed to update country' });
+  }
+});
+
+// Endpoint untuk menghapus country
+app.delete('/api/countries/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ message: "Invalid country ID" });
+  }
+
+  try {
+    const result = await pool.query('DELETE FROM countries WHERE id_country = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Country not found' });
+    }
+    res.json({ message: 'Country deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting country:', error);
+    res.status(500).json({ message: 'Failed to delete country' });
+  }
+});
+
+// Search countries by name
+app.get('/api/countries/search', async (req, res) => {
+  const { q } = req.query;
+  
+  try {
+    const result = await pool.query(
+      'SELECT * FROM countries WHERE LOWER(name) LIKE LOWER($1)',
+      [`%${q}%`]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error searching countries:', error);
+    res.status(500).json({ message: 'Failed to search countries' });
+  }
+});
+
+app.get('/api/genres', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM genres ORDER BY name');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Add a new genre
+app.post('/api/genres', async (req, res) => {
+  const { name } = req.body;
+  console.log('Request to add new genre:', name); // Log untuk memeriksa data
+
+  if (!name) {
+    return res.status(400).json({ message: 'Genre name is required' });
+  }
+
+  try {
+    const result = await pool.query('INSERT INTO genres (name) VALUES ($1) RETURNING *', [name]);
+    console.log('Insert result:', result.rows); // Log hasil insert
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding genre:', error);
+    res.status(500).json({ message: 'Failed to add genre' });
+  }
+});
+
+
+// Update a genre
+app.put('/api/genres/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    const result = await pool.query(
+      'UPDATE genres SET name = $1 WHERE id_genre = $2 RETURNING *',
+      [name, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Genre not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating genre:', error);
+    res.status(500).json({ message: 'Failed to update genre' });
+  }
+});
+
+// Delete a genre
+app.delete('/api/genres/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('DELETE FROM genres WHERE id_genre = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Genre not found' });
+    }
+    res.json({ message: 'Genre deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting genre:', error);
+    res.status(500).json({ message: 'Failed to delete genre' });
+  }
+});
+
+// Search genres by name
+app.get('/api/genres/search', async (req, res) => {
+  const { q } = req.query; // Ambil query parameter q
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM genres WHERE LOWER(name) LIKE LOWER($1)',
+      [`%${q}%`]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error searching genres:', error);
+    res.status(500).json({ message: 'Failed to search genres' });
+  }
+});
+
+
 

@@ -25,6 +25,7 @@ import CommentPage from './pages/admin/Comments';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import "./styles/detail.css";
+import "./styles/style.css";
 
 function App() {
   return (
@@ -56,7 +57,7 @@ function App() {
         <Route path="/genres" element={<ProtectedRoute roleRequired="admin"><GenresPage /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute roleRequired="admin"><UsersPage /></ProtectedRoute>} />
         <Route path="/actor" element={<ProtectedRoute roleRequired="admin"><ActorPage /></ProtectedRoute>} />
-        <Route path="/comment" element={<ProtectedRoute roleRequired="admin"><CommentPage /></ProtectedRoute>} />
+        <Route path="/comments" element={<ProtectedRoute roleRequired="admin"><CommentPage /></ProtectedRoute>} />
         
         
       </Routes>

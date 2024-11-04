@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
+import { jwtDecode } from "jwt-decode";
+import Swal from 'sweetalert2';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { jwtDecode } from "jwt-decode";
 
 const AddMoviePage = () => {
   const [title, setTitle] = useState('');
@@ -17,9 +18,10 @@ const AddMoviePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [trailer, setTrailer] = useState('');
-  const [poster, setPoster] = useState(null);
+  const [poster, setPoster] = useState('');
   const [posterLink, setPosterLink] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState({});
+  const requiredMessage = "This field is required";
 
   useEffect(() => {
     fetch('https://restcountries.com/v3.1/all') // API publik untuk daftar negara
@@ -40,7 +42,7 @@ const AddMoviePage = () => {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/genres'); // Ganti URL jika berbeda
+        const response = await fetch('http://localhost:5000/api/genres/add-movie'); // Ganti URL jika berbeda
         const data = await response.json();
         setGenres(data); // Set data genre dari API
         console.log("Fetched genres:", data);
@@ -51,6 +53,28 @@ const AddMoviePage = () => {
 
     fetchGenres();
   }, []);
+  
+  useEffect(() => {
+    if (searchTerm === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    const fetchActors = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/actors/add-movie?name=${searchTerm}`);
+        const data = await response.json();
+        setSearchResults(data); // Simpan hasil pencarian di state
+        console.log('Fetched Actors:', data);
+      } catch (error) {
+        console.error('Error fetching actors:', error);
+      }
+    };
+
+    const debounceFetch = setTimeout(fetchActors, 300); // Tunggu 300ms sebelum fetch
+
+    return () => clearTimeout(debounceFetch); // Clear timeout jika searchTerm berubah
+  }, [searchTerm]);
 
   // Menangani perubahan checkbox
   const handleGenreChange = (id_genre) => {
@@ -68,38 +92,24 @@ const AddMoviePage = () => {
     });
   };
   
-  useEffect(() => {
-    if (searchTerm === '') {
-      setSearchResults([]);
-      return;
-    }
-
-    const fetchActors = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/actors?name=${searchTerm}`);
-        const data = await response.json();
-        setSearchResults(data); // Simpan hasil pencarian di state
-        console.log('Fetched Actors:', data);
-      } catch (error) {
-        console.error('Error fetching actors:', error);
-      }
-    };
-
-    const debounceFetch = setTimeout(fetchActors, 300); // Tunggu 300ms sebelum fetch
-
-    return () => clearTimeout(debounceFetch); // Clear timeout jika searchTerm berubah
-  }, [searchTerm]);
-
   // Fungsi untuk menambah aktor dengan batas maksimal 8
   const handleActorAdd = (actor) => {
     if (actors.length >= 8) {
-      alert('You can only add up to 8 actors.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Limit Reached',
+        text: 'You can only add up to 8 actors.',
+      });
       return;
     }
 
     // Cek jika aktor sudah ada di daftar berdasarkan id_actor
     if (actors.some((a) => a.id_actor === actor.id_actor)) {
-      alert(`${actor.name} is already added to the list.`);
+      Swal.fire({
+        icon: 'info',
+        title: 'Duplicate Actor',
+        text: `${actor.name} is already added to the list.`,
+      });
       return;
     }
 
@@ -116,8 +126,16 @@ const AddMoviePage = () => {
   };
 
   const handlePosterUpload = (e) => {
-    setPoster(URL.createObjectURL(e.target.files[0]));
-    setPosterLink('');
+    const file = e.target.files[0];
+    const reader = new FileReader();
+  
+    reader.onloadend = () => {
+      const base64String = reader.result; // Base64 string of the image
+      setPoster(base64String); // Temporary display and can be used for persistent storage
+      setPosterLink(''); // Save this to the database as the poster URL
+    };
+  
+    reader.readAsDataURL(file); // Triggers onloadend and reads file as Base64
   };
 
   const handlePosterLinkChange = (e) => {
@@ -138,15 +156,53 @@ const AddMoviePage = () => {
     setYear(inputYear);
   };
 
+  const handleTrailerChange = (e) => {
+    const input = e.target.value;
+    setTrailer(input);
+
+    // Regex untuk validasi URL
+    const urlPattern = /^(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.[a-z]{2,}(\/\S*)?$/;
+    if (input && !urlPattern.test(input)) {
+      setError((prevErrors) => ({
+        ...prevErrors,
+        trailer: 'Please enter a valid trailer link',
+      }));
+    } else {
+      // Hapus error trailer jika valid
+      setError((prevErrors) => {
+        const { trailer, ...rest } = prevErrors;
+        return rest;
+      });
+    }
+  };
+
     const handleSubmit = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('UserToken');
-    let userId;
-    const genreIds = selectedGenres.filter((id) => id !== null && id !== undefined);
-    if (genreIds.length === 0) {
-      alert("Please select at least one genre.");
+
+    // Validation: Check if any required field is empty
+    const requiredFields = ["title", "year", "country", "synopsis", "trailer", "poster"];
+    let formErrors = {};
+
+    // Loop melalui setiap field yang diperlukan (kecuali yang memiliki pesan khusus)
+    requiredFields.forEach((field) => {
+      if (!eval(field)) {
+        formErrors[field] = requiredMessage;
+      }
+    });
+
+    // Pengecualian untuk field dengan pesan error yang berbeda
+    if (selectedGenres.length === 0) formErrors.genres = "Please select at least one genre";
+    if (actors.length === 0) formErrors.actors = "Please add at least one actor";
+
+    // Jika ada error, set ke state error dan hentikan submit
+    if (Object.keys(formErrors).length > 0) {
+      setError(formErrors);
       return;
     }
+
+    const token = sessionStorage.getItem('UserToken');
+    let userId;
+    const genreIds = selectedGenres.filter((id) => id !== null && id !== undefined);
 
     if (token) {
       const decodedToken = jwtDecode(token);
@@ -177,8 +233,14 @@ const AddMoviePage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data.success) {
-          alert("Movie added successfully!");
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Movie has been submitted and is pending approval from an admin.',
+          });
           // Reset input fields after success
+          setPoster('');
+          setPosterLink('');
           setTitle('');
           setAltTitle('');
           setYear('');
@@ -188,12 +250,20 @@ const AddMoviePage = () => {
           setActors([]);
           setTrailer('');
       } else {
-          alert("Failed to add movie.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: 'Failed to add movie.',
+          });
       }
       })
       .catch((error) => {
         console.error('Error adding movie:', error);
-        alert('An error occurred while adding the movie.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: `An error occurred while adding the movie.`,
+        });
       });
   };
 
@@ -207,7 +277,8 @@ const AddMoviePage = () => {
               <span style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '40px' }}>New Movie</span>
             </div>
           </div>
-        <Row>
+
+          <Row>
           <Col md={12}>
             <Form onSubmit={handleSubmit}>
               <Row>
@@ -257,6 +328,7 @@ const AddMoviePage = () => {
                         value={posterLink}
                         onChange={handlePosterLinkChange}
                       />
+                      {error.poster && <small className="text-danger">{error.poster}</small>}
                     </div>
                     <Button className="btn btn-golden" type="submit">Submit</Button>
                   </Form.Group>
@@ -273,6 +345,7 @@ const AddMoviePage = () => {
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
                         />
+                        {error.title && <small className="text-danger">{error.title}</small>}
                       </Form.Group>
                     </Col>
                     <Col md={6}>
@@ -283,7 +356,7 @@ const AddMoviePage = () => {
                           placeholder="Enter alternative title"
                           value={altTitle}
                           onChange={(e) => setAltTitle(e.target.value)}
-                        />
+                        />                        
                       </Form.Group>
                     </Col>
                   </Row>
@@ -300,13 +373,13 @@ const AddMoviePage = () => {
                           min="1900"
                           max={new Date().getFullYear()}
                         />
-                        {error && <small className="text-danger">{error}</small>}
+                        {error.year && <small className="text-danger">{error.year}</small>}
                       </Form.Group>
                     </Col>
 
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label>Country</Form.Label>
+                        <Form.Label>Country</Form.Label> 
                           <Form.Control
                             as="select"
                             value={country ? country.value : ''}
@@ -317,8 +390,9 @@ const AddMoviePage = () => {
                               <option key={country.name} value={country.name}>
                                 {country.name}
                               </option>
-                            ))}
+                            ))}                            
                           </Form.Control>
+                          {error.country && <small className="text-danger">{error.country}</small>}
                       </Form.Group>
                     </Col>
                   </Row>
@@ -331,6 +405,7 @@ const AddMoviePage = () => {
                       value={synopsis}
                       onChange={(e) => setSynopsis(e.target.value)}
                     />
+                    {error.synopsis && <small className="text-danger">{error.synopsis}</small>}
                   </Form.Group>
 
                   <Form.Group className="mb-3">
@@ -347,6 +422,7 @@ const AddMoviePage = () => {
                         </Col>
                       ))}
                     </Row>
+                    {error.genres && <small className="text-danger">{error.genres}</small>}
                   </Form.Group>
 
                   <Form.Group className="mb-3">
@@ -386,13 +462,12 @@ const AddMoviePage = () => {
                         ))}
                       </div>
                     )}
+                    {error.actors && <small className="text-danger">{error.actors}</small>}
                     <Row>
                       {actors.map((actor, index) => (
                         <Col key={index} md={3} className="mb-3">
                           <Card className="h-100">
                             <Card.Body className="d-flex flex-column align-items-center">
-                            {console.log('Actor in list:', actor)}
-                            {console.log('actor',actor.photo)} 
                               <img
                                 src={actor.photo || '/images/default-actor.jpg'} // Ganti dengan gambar default jika photoUrl tidak ada
                                 alt={actor.name}
@@ -426,15 +501,16 @@ const AddMoviePage = () => {
                           type="text"
                           placeholder="Enter trailer link"
                           value={trailer}
-                          onChange={(e) => setTrailer(e.target.value)}
+                          onChange={handleTrailerChange}
                         />
+                        {error.trailer && <small className="text-danger">{error.trailer}</small>}
                       </Form.Group>
                   </Row>
                 </Col>
               </Row>
             </Form>
           </Col>
-        </Row>
+        </Row>       
       </Container>
       <Footer/>
     </>

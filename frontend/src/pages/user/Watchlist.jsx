@@ -12,7 +12,7 @@ const WatchlistPage = () => {
   
   // Panggil API watchlist
   useEffect(() => {
-    const token = localStorage.getItem('UserToken');
+    const token = sessionStorage.getItem('UserToken');
 
     const fetchWatchlist = async () => {
       console.log('Token received', token);
@@ -84,10 +84,10 @@ const WatchlistPage = () => {
               onResetComplete={() => setResetFilters(false)} 
            />
           <div className="col-md-10 mt- mx-auto">
-          <div className="row justify-content-center mb-4">
+          <div className="row justify-content-center mb-4 mt-4">
             <div className="col-12 text-center">
-              <span style={{ color: '#FFFFFF', fontFamily: 'Oswald', fontSize: '40px' }}>Detail </span>
-              <span style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '40px' }}>Information</span>
+              <span style={{ color: '#FFFFFF', fontFamily: 'Oswald', fontSize: '40px' }}>Your </span>
+              <span style={{ color: '#C6A628', fontFamily: 'Oswald', fontSize: '40px' }}>Watchlist</span>
             </div>
           </div>
             <div className="d-flex justify-content-end gap-2 align-items-center mb-3">

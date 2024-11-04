@@ -1,5 +1,6 @@
 import React, {  useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 function Sidebar() {
   const [activePage, setActivePage] = useState('');
@@ -8,7 +9,7 @@ function Sidebar() {
 
   // Gunakan useEffect untuk memeriksa status login saat komponen pertama kali dimuat
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     setIsLoggedIn(!!token); // Set isLoggedIn menjadi true jika token ada, false jika tidak
   }, []);
 
@@ -22,17 +23,26 @@ function Sidebar() {
   };
 
   const handleLogoutConfirm = () => {
-    // Tampilkan kotak dialog konfirmasi
-    const confirmed = window.confirm('Are you sure you want to logout?');
-  
-    if (confirmed) {
-      // Jika pengguna mengonfirmasi, jalankan handleLogoutClick
-      handleLogoutClick();
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You will be logged out!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout!',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Jika pengguna mengonfirmasi, jalankan handleLogoutClick
+        handleLogoutClick();
+      }
+    });
   };
+  
 
   const handleLogoutClick = () => {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     setIsLoggedIn(false);
     navigate('/login');
   };
@@ -66,9 +76,9 @@ function Sidebar() {
         <li className={`nav-item ${activePage === '/countries' ? 'active' : ''}`} onClick={() => handleMenuClick('/countries')}>
           <a className="nav-link" href="/countries">Countries</a>
         </li>
-        <li className={`nav-item ${activePage === '/awards' ? 'active' : ''}`} onClick={() => handleMenuClick('/awards')}>
+        {/* <li className={`nav-item ${activePage === '/awards' ? 'active' : ''}`} onClick={() => handleMenuClick('/awards')}>
           <a className="nav-link" href="/awards">Awards</a>
-        </li>
+        </li> */}
         <li className={`nav-item ${activePage === '/genres' ? 'active' : ''}`} onClick={() => handleMenuClick('/genres')}>
           <a className="nav-link" href="/genres">Genres</a>
         </li>
@@ -81,8 +91,8 @@ function Sidebar() {
         <li className={`nav-item ${activePage === '/users' ? 'active' : ''}`} onClick={() => handleMenuClick('/users')}>
           <a className="nav-link" href="/users">Users</a>
         </li>
-        <li className="nav-item">
-          <a className="nav-link" onClick={handleLogoutConfirm}>Logout</a>
+        <li className="nav-item" onClick={handleLogoutConfirm}>
+          <a className="nav-link" href="#">Logout</a>
         </li>
       </ul>
     </div>

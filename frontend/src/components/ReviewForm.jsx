@@ -1,20 +1,25 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { FaStar } from "react-icons/fa";
 
 const ReviewForm = ({ id_movie }) => {
   const [comment, setComment] = useState('');
   const [rate, setRate] = useState(5);
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('UserToken'); // Ambil token JWT dari localStorage
-    
+    const token = sessionStorage.getItem('UserToken'); // Ambil token JWT dari sessionStorage
+    // setIsLoggedIn(!!token);
+
     // Pastikan token diambil dengan benar
     if (!token) {
+      navigate('/login');
       console.error('Token is missing!');
       return;
     }
+    
 
     try {
       const response = await fetch('http://localhost:5000/api/comments', {
