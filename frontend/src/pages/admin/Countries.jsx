@@ -139,7 +139,7 @@ const Countries = () => {
           Swal("Country successfully deleted!", { icon: "success" });
         } catch (error) {
           console.error("Error deleting country:", error);
-          Swal("Failed to delete country.", { icon: "error" });
+          Swal("Country cannot be deleted as they are associated with one or more movies.", { icon: "error" });
         }
       }
     });

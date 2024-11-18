@@ -155,7 +155,7 @@ const Genres = () => {
           Swal.fire('Deleted!', 'Genre has been deleted.', 'success');
         } catch (error) {
           console.error("Error deleting genre:", error);
-          Swal.fire('Error!', 'Failed to delete genre.', 'error');
+          Swal.fire('Error!', 'Genres cannot be deleted as they are associated with one or more movies.', 'error');
         }
       }
     });

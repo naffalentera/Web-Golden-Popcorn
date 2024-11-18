@@ -4,7 +4,6 @@ import '../../styles/detail.css';
 import Swal from 'sweetalert';
 
 const Users = () => {
-  const [newUser, setNewUser] = useState({ username: "", email: "" });
   const [users, setUsers] = useState([]);
 
   // Fetch users data from the backend
@@ -14,51 +13,87 @@ const Users = () => {
         const response = await fetch(`http://localhost:5000/api/user`);
         if (!response.ok) throw new Error('Failed to fetch users');
         const data = await response.json();
-        setUsers(data);// Update state dengan data aktor dari backend
-        console.log("Fetched users:", data); // Debugging
+        setUsers(data); // Update state with data from backend
+        console.log("Fetched users with updated suspend status:", data); // Debugging
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     };
-
+  
     fetchUsers();
-  }, []);
+  }, []);  
 
-  // Handle form input changes
-  const handleInputChange = (e) => {
-    setNewUser({ ...newUser, [e.target.name]: e.target.value });
-  };
 
-  // Handle form submission
-  const handleSubmit = () => {
-    if (newUser.username && newUser.email) {
-      setUsers([...users, { ...newUser, firstEmailSent: false }]);
-      setNewUser({ username: "", email: "" });
+// Function to suspend a user
+const handleSuspend = (user) => {
+  Swal({
+    title: `Are you sure you want to suspend "${user.username}"?`,
+    icon: "warning",
+    buttons: ["Cancel", "Suspend"],
+    dangerMode: true,
+  }).then(async (willSuspend) => {
+    if (willSuspend) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/user/suspend/${user.id_user}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.ok) {
+          const updatedUser = await response.json();
+          setUsers((prevUsers) =>
+            prevUsers.map((u) =>
+              u.id_user === user.id_user ? { ...u, is_suspended: true } : u
+            )
+          );
+          Swal("User suspended successfully!", { icon: "success" });
+        } else {
+          const errorData = await response.json();
+          Swal(errorData.message || "Failed to change suspend status", { icon: "error" });
+        }
+      } catch (error) {
+        console.error("Error suspending user:", error);
+        Swal("Failed to change suspend status. Please try again.", { icon: "error" });
+      }
     }
-  };
-
-// Fungsi untuk mengubah status suspend
-const handleSuspend = async (user) => {
-  try {
-    const response = await fetch(`http://localhost:5000/api/user/suspend/${user.id_user}`, {
-      method: 'PUT',
-    });
-    
-    if (response.ok) {
-      const updatedUser = await response.json();
-      setUsers((prevUsers) =>
-        prevUsers.map((u) => u.id_user === user.id_user ? { ...u, is_suspended: !u.is_suspended } : u)
-      );
-      Swal(`User ${updatedUser.user.is_suspended ? 'disuspend' : 'di-unsuspend'} dengan sukses`, { icon: "success" });
-    } else {
-      const errorData = await response.json();
-      Swal(errorData.message || "Gagal mengubah status suspend", { icon: "error" });
-    }
-  } catch (error) {
-    console.error('Error suspending user:', error);
-    Swal("Gagal mengubah status suspend. Coba lagi.", { icon: "error" });
-  }
+  });
 };
+
+
+const handleUnsuspend = (user) => { 
+  Swal({
+    title: `Are you sure you want to unsuspend "${user.username}"?`,
+    icon: "warning",
+    buttons: ["Cancel", "Unsuspend"],
+    dangerMode: true,
+  }).then(async (willUnsuspend) => {
+    if (willUnsuspend) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/user/unsuspend/${user.id_user}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (response.ok) {
+          const updatedUser = await response.json();
+          setUsers((prevUsers) =>
+            prevUsers.map((u) =>
+              u.id_user === user.id_user ? { ...u, is_suspended: false } : u
+            )
+          );
+          Swal("User unsuspend successfully!", { icon: "success" });
+        } else {
+          const errorData = await response.json();
+          Swal(errorData.message || "Failed to change unsuspend status", { icon: "error" });
+        }
+      } catch (error) {
+        console.error("Error unsuspending user:", error);
+        Swal("Failed to change unsuspend status. Please try again.", { icon: "error" });
+      }
+    }
+  });
+};
+
 
   // Fungsi untuk menghapus user dengan konfirmasi SweetAlert
   const handleDeleteUser = (user) => {
@@ -102,49 +137,6 @@ const handleSuspend = async (user) => {
           <h3 className style={{ color: '#FFFFFF', fontFamily: 'Plus Jakarta Sans', fontSize: '29px' }}>CMS Users</h3>
         </div>
 
-        {/* Form Section */}
-        <div className="d-flex justify-content-start mt-4">
-          <input
-            type="text"
-            name="username"
-            value={newUser.username}
-            onChange={handleInputChange}
-            style={{
-              borderRadius: "10px",
-              backgroundColor: "#FFFFFF",
-              border: "#C6A628",
-              padding: "10px 20px",
-              color: "#000000",
-              marginRight: "10px",
-              width: "250px",
-            }}
-            placeholder="Enter username"
-          />
-          <input
-            type="text"
-            name="email"
-            value={newUser.email}
-            onChange={handleInputChange}
-            style={{
-              borderRadius: "10px",
-              backgroundColor: "#FFFFFF",
-              border: "#C6A628",
-              padding: "10px 20px",
-              color: "#000000",
-              marginRight: "10px",
-              width: "250px",
-            }}
-            placeholder="Enter email"
-          />
-          <button
-            className="btn btn-primary"
-            style={{ backgroundColor: "#C6A628", borderColor: "#C6A628" }}
-            onClick={handleSubmit}
-          >
-            Submit
-          </button>
-        </div>
-
         {/* Users Table */}
         <div className="table-responsive mt-4">
           <table className="table-box">
@@ -152,19 +144,22 @@ const handleSuspend = async (user) => {
               <tr>
                 <th>Username</th>
                 <th>Email</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user, index) => (
-                <tr key={index}>
-                  <td>{user.username}</td>
-                  <td>{user.email}</td>
-                  <td>
-                      <button
+            {users.map((user, index) => (
+              <tr key={index}>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>{user.is_suspended ? "Suspended" : "Active"}</td>
+                <td>
+                  {!user.is_suspended && (
+                    <button
                       onClick={() => handleSuspend(user)}
                       style={{
-                        color: user.is_suspended ? "#008000" : "#FF0000", // Hijau untuk unsuspend, Merah untuk suspend
+                        color: "#4169E1", // Red color for suspend
                         background: "none",
                         border: "none",
                         padding: "0",
@@ -172,13 +167,16 @@ const handleSuspend = async (user) => {
                         cursor: "pointer"
                       }}
                     >
-                      {user.is_suspended ? "Unsuspend" : "Suspend"}
+                      Suspend
                     </button>
-                    <span> | </span>
+                  )}
+
+                  {/* Unsuspend button (shows only if user is suspended) */}
+                  {user.is_suspended && (
                     <button
-                      onClick={() => handleDeleteUser(user)}
+                      onClick={() => handleUnsuspend(user)}
                       style={{
-                        color: "#FF0000",
+                        color: "#008000", // Green color for unsuspend
                         background: "none",
                         border: "none",
                         padding: "0",
@@ -186,12 +184,30 @@ const handleSuspend = async (user) => {
                         cursor: "pointer"
                       }}
                     >
-                      Delete
+                      Unsuspend
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                  )}
+                  
+                  <span> | </span>
+                  
+                  {/* Delete button (always visible) */}
+                  <button
+                    onClick={() => handleDeleteUser(user)}
+                    style={{
+                      color: "#FF0000",
+                      background: "none",
+                      border: "none",
+                      padding: "0",
+                      textDecoration: "underline",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
           </table>
         </div>
       </div>

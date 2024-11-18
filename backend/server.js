@@ -154,7 +154,7 @@ app.post('/api/login', async (req, res) => {
 
     // Cek apakah akun disuspend
     if (user.is_suspended) {
-      return res.status(403).json({ success: false, message: 'Akun Anda sedang disuspend. Silakan hubungi admin.' });
+      return res.status(403).json({ success: false, message: 'Your account is currently suspended. Please contact the admin.' });
     }
 
     // Cek apakah password cocok dengan hashed password di database
@@ -725,10 +725,27 @@ app.get('/api/actors', async (req, res) => {
   }
 });
 
-// Endpoint untuk menghapus actor berdasarkan id
+// Endpoint to delete an actor
 app.delete('/api/actors/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ message: "Invalid actor ID" });
+  }
+
   try {
-    const { id } = req.params;
+    // Check if the actor is associated with any movies
+    const associationCheck = await pool.query(
+      'SELECT COUNT(*) FROM movie_actors WHERE id_actor = $1', [id]
+    );
+
+    if (parseInt(associationCheck.rows[0].count, 10) > 0) {
+      return res.status(400).json({
+        message: "Actor cannot be deleted as they are associated with one or more movies."
+      });
+    }
+
+    // Proceed to delete the actor if not associated with any movies
     const result = await pool.query('DELETE FROM actors WHERE id_actor = $1 RETURNING *', [id]);
 
     if (result.rowCount === 0) {
@@ -738,10 +755,11 @@ app.delete('/api/actors/:id', async (req, res) => {
     res.json({ message: 'Actor deleted successfully', actor: result.rows[0] });
   } catch (err) {
     console.error('Error deleting actor:', err);
-    res.status(500).json({ message: 'Server error' });x
+    res.status(500).json({ message: 'Server error' });
   }
+});
 
-});// Endpoint menambahkan aktor baru
+// Endpoint menambahkan aktor baru
 app.post('/api/actors', async (req, res) => {
   try {
     const { name, photo } = req.body; // Destructure name and photo from the request body
@@ -817,13 +835,14 @@ app.put('/api/actors/:id', async (req, res) => {
 app.get('/api/user', async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id_user, username, email, role 
+      `SELECT id_user, username, email, role, is_suspended 
        FROM users 
        WHERE role = 'user'`
     );
+    console.log("Fetched users:", result.rows); // Debugging
     res.json(result.rows);
   } catch (err) {
-    console.error('Error fetching actors:', err);
+    console.error('Error fetching users:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -859,6 +878,50 @@ app.put('/api/user/suspend/:id', async (req, res) => {
     // Toggle status suspend
     const isSuspended = !user.rows[0].is_suspended;
     const result = await pool.query('UPDATE users SET is_suspended = $1 WHERE id_user = $2 RETURNING *', [isSuspended, id]);
+
+    res.json(result.rows[0]);  // Kirim user langsung tanpa nesting "user" lagi
+  } catch (err) {
+    console.error('Error updating user suspension:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// Endpoint untuk mengubah status suspend pengguna
+app.put('/api/user/suspend/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Dapatkan status is_suspended saat ini
+    const user = await pool.query('SELECT is_suspended FROM users WHERE id_user = $1', [id]);
+    if (user.rowCount === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    // Toggle status suspend
+    const isSuspended = !user.rows[0].is_suspended;
+    const result = await pool.query('UPDATE users SET is_suspended = $1 WHERE id_user = $2 RETURNING *', [true, id]);
+
+    res.json(result.rows[0]);  // Kirim user langsung tanpa nesting "user" lagi
+  } catch (err) {
+    console.error('Error updating user suspension:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
+});
+
+// Endpoint untuk mengubah status unsuspend pengguna
+app.put('/api/user/unsuspend/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Dapatkan status is_suspended saat ini
+    const user = await pool.query('SELECT is_suspended FROM users WHERE id_user = $1', [id]);
+    if (user.rowCount === 0) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    // Toggle status suspend
+    const isSuspended = !user.rows[0].is_suspended;
+    const result = await pool.query('UPDATE users SET is_suspended = $1 WHERE id_user = $2 RETURNING *', [false, id]);
 
     res.json(result.rows[0]);  // Kirim user langsung tanpa nesting "user" lagi
   } catch (err) {
@@ -1025,10 +1088,24 @@ app.delete('/api/countries/:id', async (req, res) => {
   }
 
   try {
+    // Check if the country is associated with any movies
+    const associationCheck = await pool.query(
+      'SELECT COUNT(*) FROM movie_countries WHERE id_country = $1', [id]
+    );
+
+    if (parseInt(associationCheck.rows[0].count, 10) > 0) {
+      return res.status(400).json({
+        message: "Country cannot be deleted as it is associated with one or more movies."
+      });
+    }
+
+    // Proceed to delete the country if it is not associated with any movies
     const result = await pool.query('DELETE FROM countries WHERE id_country = $1 RETURNING *', [id]);
+
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Country not found' });
     }
+
     res.json({ message: 'Country deleted successfully' });
   } catch (error) {
     console.error('Error deleting country:', error);
@@ -1102,15 +1179,33 @@ app.put('/api/genres/:id', async (req, res) => {
   }
 });
 
-// Delete a genre
+// Endpoint to delete a genre
 app.delete('/api/genres/:id', async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ message: "Invalid genre ID" });
+  }
 
   try {
+    // Check if the genre is associated with any movies
+    const associationCheck = await pool.query(
+      'SELECT COUNT(*) FROM movie_genres WHERE id_genre = $1', [id]
+    );
+
+    if (parseInt(associationCheck.rows[0].count, 10) > 0) {
+      return res.status(400).json({
+        message: "Genre cannot be deleted as it is associated with one or more movies."
+      });
+    }
+
+    // Proceed to delete the genre if it is not associated with any movies
     const result = await pool.query('DELETE FROM genres WHERE id_genre = $1 RETURNING *', [id]);
+
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Genre not found' });
     }
+
     res.json({ message: 'Genre deleted successfully' });
   } catch (error) {
     console.error('Error deleting genre:', error);
