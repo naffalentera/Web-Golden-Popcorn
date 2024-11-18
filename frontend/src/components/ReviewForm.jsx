@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { FaStar } from "react-icons/fa";
+import Swal from 'sweetalert2';
 
 const ReviewForm = ({ id_movie }) => {
   const [comment, setComment] = useState('');
@@ -33,6 +34,14 @@ const ReviewForm = ({ id_movie }) => {
 
       const data = await response.json();
       console.log('Comment added:', data);
+
+      // Tampilkan alert swal setelah komentar berhasil dikirim
+      Swal.fire({
+        title: 'Comment Submitted!',
+        text: 'Please wait for admin approval before your comment is visible.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
 
       // Reset form setelah komentar dikirim
       setComment('');

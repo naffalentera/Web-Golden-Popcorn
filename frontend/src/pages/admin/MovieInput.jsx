@@ -146,19 +146,21 @@ const MovieInputPage = () => {
     const inputYear = e.target.value;
     const currentYear = new Date().getFullYear();
   
+    setYear(inputYear); // Set year terlebih dahulu untuk memastikan input selalu bisa diubah
+
     if (inputYear < 1900 || inputYear > currentYear) {
       setError((prevErrors) => ({
         ...prevErrors,
-        year : 'Please enter a year between 1900 and ${currentYear}',
+        year: `Please enter a year between 1900 and ${currentYear}`,
       }));
     } else {
       setError((prevErrors) => {
         const { year, ...rest } = prevErrors;
         return rest;
-      });  
-    setYear(inputYear);
-    };
-  }
+      });
+    }
+};
+
 
   const handleTrailerChange = (e) => {
     const input = e.target.value;
@@ -513,11 +515,12 @@ const MovieInputPage = () => {
                       </Form.Group>
                   </Row>
                 </Col>
+                
               </Row>
             </Form>
           </Col>
         </Row>
-    </div>
+      </div>
     </div>
   );
 };
