@@ -45,7 +45,6 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
         // Call all the fetch functions
         fetchGenres();
         fetchCountries();
-        // fetchAwards();
     }, []);
 
     // Reset filters when `resetFilters` changes
@@ -53,7 +52,6 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
         if (resetFilters) {
             setSelectedGenre('all');
             setSelectedCountry('all');
-            // setSelectedAward('all');
             setSelectedYear('all');
             onFilterChange({ year: 'all', genre: 'all', country: 'all'});
             onResetComplete();  // Notify parent that reset is complete
@@ -64,13 +62,11 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
     const clearFilters = () => {
         setSelectedGenre('all');
         setSelectedCountry('all');
-        // setSelectedAward('all');
         setSelectedYear('all');
         onFilterChange({
             year: 'all',
             genre: 'all',
-            country: 'all',
-            // award: 'all',
+            country: 'all'
         });
     };
 
@@ -88,7 +84,6 @@ const Filter = ({ onFilterChange, resetFilters, onResetComplete }) => {
             year: selectedYear,
             genre: selectedGenre,
             country: selectedCountry,
-            // award: selectedAward,
         };
         
         onFilterChange(filters);

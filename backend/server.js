@@ -16,6 +16,16 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+// if (require.main === module && process.env.NODE_ENV !== 'test') {
+//   const PORT = process.env.PORT || 5000;
+//   app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+//   });
+// }
+
+// module.exports = app;
+
+
 const { check, body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
@@ -85,6 +95,7 @@ app.post('/api/register', [
     }
 
     // Hash password
+    console.log('Salt Rounds:', 10); 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -250,6 +261,30 @@ app.get('/auth/google/callback',
   }
 );
 
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', { session: false }),
+  async (req, res) => {
+    try {
+      console.log('Google callback triggered');
+      const user = req.user; // Dari Passport.js
+      console.log('User from Passport:', user);
+
+      const secret = process.env.JWT_SECRET || 'testsecret';
+      const token = jwt.sign({ id: user.id_user, email: user.email }, secret, { expiresIn: '1h' });
+
+      console.log('Generated JWT:', token);
+      res.redirect(`/home?token=${token}`);
+    } catch (error) {
+      console.error('Error in Google callback:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  }
+);
+
+
+
+
 // Forget password ------------------------------------------------------------------------------------------------------------------------------------------------------- //
 app.post('/api/forgot-password', async (req, res) => {
   const { email } = req.body;
@@ -309,9 +344,10 @@ app.get('/api/reset-password', (req, res) => {
 
 app.post('/api/reset-password', async (req, res) => {
   const { token, email, newPassword } = req.body;
-
+  console.log('Request body:', req.body);
   try {
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    console.log('Database query result:', result.rows);
 
     if (user.rows.length === 0) {
       return res.status(400).json({ success: false, message: 'Invalid email' });
@@ -377,8 +413,18 @@ const handleMoviesRequest = async (req, res, isSearch = false) => {
 
     const result = await pool.query(sqlQuery, [searchQuery, genreFilter, countryFilter, yearFilter, limit, offset]);
 
+    const countQuery = `SELECT COUNT(*) AS total_count FROM movies WHERE movies.status = 'approved'`;
+    const countResult = await pool.query(countQuery);
+    const totalCount = parseInt(countResult.rows[0].total_count);
+    const totalPages = Math.ceil(totalCount / limit);
+
     // console.log('Movies fetched:', result.rows);
-    res.json(result.rows);
+    // res.json(result.rows);
+    res.json({
+      movies: result.rows,
+      totalCount,
+      totalPages,
+    });
   } catch (err) {
     console.error('Error fetching movies:', err);
     res.status(500).send('Server Error');
@@ -523,12 +569,12 @@ app.post('/api/movie/add', authenticateToken,
       }
 
       await pool.query('COMMIT');
-      res.status(200).json({ success: true, message: 'Movie added successfully with ${status} status.' });
+      res.status(201).json({ success: true, message: `Movie added successfully with ${status} status.` });
 
     } catch (error) {
       await pool.query('ROLLBACK');
       console.error('Error adding movie:', error.message);
-      res.status(500).json({ success: false, message: 'Failed to add movie.' });
+      res.status(500).json({ success: false, message: `Failed to add movie.` });
     }
   }
 );
@@ -1231,3 +1277,4 @@ app.get('/api/genres/search', async (req, res) => {
 
 
 
+module.exports = app;

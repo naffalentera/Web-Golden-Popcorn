@@ -3,9 +3,7 @@ import Sidebar from '../../components/Sidebar';
 import '../../styles/Actor.css';
 import '../../styles/detail.css';
 import Modal from "react-bootstrap/Modal"; // Import React Bootstrap Modal
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert';
 
 
 const Genres = () => {
@@ -127,35 +125,37 @@ const Genres = () => {
   };  
 
   // Function to delete genre with success notification
-  const handleDeleteGenre = async (genre) => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: `Do you really want to delete the genre "${genre.name}"? This action cannot be undone.`,
+  const handleDeleteGenre = (genre) => {
+    Swal({
+      title: `Are you sure you want to delete "${genre.name}"?`,
       icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+      buttons: ["Cancel", "Delete"],
+      dangerMode: true,
+    }).then(async (willDelete) => {
+      if (willDelete) {
         try {
           const response = await fetch(`http://localhost:5000/api/genres/${genre.id_genre}`, {
             method: 'DELETE'
           });
   
           if (!response.ok) {
-            throw new Error("Failed to delete genre");
+            const errorData = await response.json(); 
+            const errorMessage = errorData.message || "Unknown error occurred"; 
+            throw new Error(`Failed to delete genre. ${errorMessage}`);
           }
   
           const updatedGenres = genres.filter(g => g.id_genre !== genre.id_genre);
           setGenres(updatedGenres);
           setFilteredGenres(updatedGenres);
           
-          Swal.fire('Deleted!', 'Genre has been deleted.', 'success');
+          Swal("Genre successfully deleted!", { icon: "success" });
         } catch (error) {
-          console.error("Error deleting genre:", error);
-          Swal.fire('Error!', 'Genres cannot be deleted as they are associated with one or more movies.', 'error');
+          console.error("Error deleting genre:", error.message);
+          Swal({
+            title: "Error",
+            text: error.message, // Gabungkan pesan default dan error spesifik
+            icon: "error",
+          });
         }
       }
     });

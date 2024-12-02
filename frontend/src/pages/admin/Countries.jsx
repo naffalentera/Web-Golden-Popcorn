@@ -133,16 +133,23 @@ const Countries = () => {
             method: 'DELETE'
           });
           if (!response.ok) {
-            throw new Error("Failed to delete country");
+            const errorData = await response.json(); 
+            const errorMessage = errorData.message || "Unknown error occurred"; 
+            throw new Error(`Failed to delete country. ${errorMessage}`);
           }
           setCountries(countries.filter(c => c.id_country !== country.id_country));
           Swal("Country successfully deleted!", { icon: "success" });
         } catch (error) {
-          console.error("Error deleting country:", error);
-          Swal("Country cannot be deleted as they are associated with one or more movies.", { icon: "error" });
+          console.error("Error deleting country:", error.message); // Tampilkan pesan lengkap di console
+          Swal({
+            title: "Error",
+            text: error.message, // Gabungkan pesan default dan error spesifik
+            icon: "error",
+          });
         }
       }
     });
+    
   };  
 
   return (
