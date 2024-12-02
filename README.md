@@ -1,44 +1,52 @@
-# Web Movie Review Platform
+# Web-Golden-Popcorn
 
-This is a web application for movie reviews, similar to IMDb, built using **Node.js**, **React**, and **PostgreSQL**. Users can view movie information and submit reviews.
+Web-Golden-Popcorn is a movie review web application similar to IMDb. This application uses Node.js, React, and PostgreSQL.
 
-## Technology Stack
+## Technology Specifications
 
-- **Frontend**: React.js
-- **Backend**: Node.js with Express.js
-- **Database**: PostgreSQL
-- **API**: RESTful API using Express.js
-- **State Management (Frontend)**: React Hooks
-- **Authentication**: JWT (JSON Web Tokens)
+### Backend
+- **Node.js**: Runs the backend server.
+- **Express**: A framework for building APIs.
+- **PostgreSQL**: Database for storing movie and review data.
+- **pg**: Node.js module for accessing PostgreSQL.
+- **jsonwebtoken**: For authentication and authorization using JWT tokens.
+- **bcryptjs**: For password hashing.
+- **dotenv**: For managing environment variables.
 
-## Prerequisites
+### Frontend
+- **React**: A library for building user interfaces.
+- **fetch**: For making HTTP requests from the frontend to the backend.
+- **React Router**: For managing routing in the React application.
+- **Bootstrap**: For styling and responsive layout.
 
-Ensure you have the following installed:
-- [Node.js](https://nodejs.org/) (version 14 or higher)
-- [npm](https://www.npmjs.com/) (usually installed with Node.js)
-- [PostgreSQL](https://www.postgresql.org/)
+## Installation Guide
 
-## Installation
+Follow the steps below to install and run the Web-Golden-Popcorn application locally.
 
-Follow these steps to get the project up and running on your local machine:
+### Prerequisites
+Make sure you have the following installed:
+- Node.js and npm: [Download Node.js](https://nodejs.org/)
+- PostgreSQL: [Download PostgreSQL](https://www.postgresql.org/download/)
 
-### 1. Clone the Repository
+### Installation Steps
 
-```bash
+#### 1. Clone the Repository
+Clone the repository from GitHub to your local machine:
+bash
 git clone https://github.com/RahmaDivina/Web-Golden-Popcorn.git
 cd Web-Golden-Popcorn
-2. Set up the Backend
-Navigate to the backend directory:
 
+#### 2. Set up the Backend
+2.1 Navigate to the backend directory
 bash
 Copy code
 cd backend
-Install dependencies for the backend:
-
+2.2 Install the necessary backend dependencies
 bash
 Copy code
 npm install
-Create a .env file in the backend directory for PostgreSQL configuration. Add the following database parameters:
+2.3 Create a .env file for PostgreSQL configuration
+Create a .env file in the backend directory with the following content:
 
 env
 Copy code
@@ -47,46 +55,45 @@ DB_PORT=5432
 DB_USER=your_user
 DB_PASSWORD=your_password
 DB_NAME=your_database
-Start the backend server:
-
+2.4 Run the backend server
 bash
 Copy code
 node server.js
+The backend will now be running at http://localhost:5000.
+
 3. Set up the Frontend
+3.1 Navigate to the frontend directory
 Return to the root directory and navigate to the frontend directory:
 
 bash
 Copy code
 cd frontend
-Install dependencies for the frontend:
-
+3.2 Install the necessary frontend dependencies
 bash
 Copy code
 npm install
-Start the React application in development mode:
-
+3.3 Run the React development server
 bash
 Copy code
 npm start
-The frontend will be running at http://localhost:3000, and the backend will be running at http://localhost:5000.
+The frontend will now be running at http://localhost:3000.
 
+4. Connecting the Frontend and Backend
+Once both the frontend and backend are running:
+
+The frontend will make API requests to the backend at http://localhost:5000.
+Ensure the backend is properly configured to handle API requests from the frontend (Cross-Origin Resource Sharing, CORS, may need to be enabled if you encounter issues).
 Features
 Display a list of movies with details and reviews.
 Users can submit reviews for movies.
 Search for movies by title.
 Contributing
-If you would like to contribute, please fork this repository, create a new branch, and submit a pull request with a description of the changes you've made.
+If you want to contribute to this project, follow these steps:
 
-License
-This project is licensed under the MIT License.
-
-markdown
-Copy code
-
-### Explanation:
-- **Technology Stack**: Lists the key technologies used in the project.
-- **Prerequisites**: Specifies the necessary software that needs to be installed before starting the project.
-- **Installation**: Provides step-by-step instructions for setting up both the backend and frontend environments.
-- **Features**: Highlights the key features of the application.
-- **Contributing**: Encourages open-source collaboration with instructions for contributing.
-- **License**: States the licensing terms for the project.
+Fork the repository.
+Create a new branch (git checkout -b feature-branch).
+Make your changes.
+Commit your changes (git commit -am 'Add new feature').
+Push to your branch (git push origin feature-branch).
+Open a pull request.
+Please provide a clear description of the changes you've made.
