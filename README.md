@@ -86,9 +86,9 @@ The frontend will make API requests to the backend at http://localhost:5000.
 Ensure the backend is properly configured to handle API requests from the frontend (Cross-Origin Resource Sharing, CORS, may need to be enabled if you encounter issues).
 
 ## Features
-Display a list of movies with details and reviews.
-Users can submit reviews for movies.
-Search for movies by title.
+1. Display a list of movies with details and reviews.
+2. Users can submit reviews for movies.
+3. Search for movies by title.
 
 ## Contributing
 If you want to contribute to this project, follow these steps:
