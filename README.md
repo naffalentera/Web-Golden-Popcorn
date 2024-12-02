@@ -32,62 +32,72 @@ Make sure you have the following installed:
 
 #### 1. Clone the Repository
 Clone the repository from GitHub to your local machine:
-bash
+```bash
 git clone https://github.com/RahmaDivina/Web-Golden-Popcorn.git
 cd Web-Golden-Popcorn
+```
 
 #### 2. Set up the Backend
 2.1 Navigate to the backend directory
-bash
+```bash
 Copy code
 cd backend
+```
 2.2 Install the necessary backend dependencies
-bash
+```bash
 Copy code
 npm install
+```
 2.3 Create a .env file for PostgreSQL configuration
 Create a .env file in the backend directory with the following content:
 
-env
+```env
 Copy code
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=your_user
 DB_PASSWORD=your_password
 DB_NAME=your_database
+```
 2.4 Run the backend server
-bash
+```bash
 Copy code
 node server.js
+```
 The backend will now be running at http://localhost:5000.
 
-3. Set up the Frontend
+#### 3. Set up the Frontend
 3.1 Navigate to the frontend directory
 Return to the root directory and navigate to the frontend directory:
 
-bash
+```bash
 Copy code
 cd frontend
+```
 3.2 Install the necessary frontend dependencies
-bash
+```bash
 Copy code
 npm install
+```
 3.3 Run the React development server
-bash
+```bash
 Copy code
 npm start
+```
 The frontend will now be running at http://localhost:3000.
 
-4. Connecting the Frontend and Backend
+#### 4. Connecting the Frontend and Backend
 Once both the frontend and backend are running:
 
 The frontend will make API requests to the backend at http://localhost:5000.
 Ensure the backend is properly configured to handle API requests from the frontend (Cross-Origin Resource Sharing, CORS, may need to be enabled if you encounter issues).
-Features
+
+## Features
 Display a list of movies with details and reviews.
 Users can submit reviews for movies.
 Search for movies by title.
-Contributing
+
+## Contributing
 If you want to contribute to this project, follow these steps:
 
 Fork the repository.
