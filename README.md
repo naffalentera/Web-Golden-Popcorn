@@ -40,19 +40,16 @@ cd Web-Golden-Popcorn
 #### 2. Set up the Backend
 2.1 Navigate to the backend directory
 ```bash
-Copy code
 cd backend
 ```
 2.2 Install the necessary backend dependencies
 ```bash
-Copy code
 npm install
 ```
 2.3 Create a .env file for PostgreSQL configuration
 Create a .env file in the backend directory with the following content:
 
 ```env
-Copy code
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=your_user
@@ -61,7 +58,6 @@ DB_NAME=your_database
 ```
 2.4 Run the backend server
 ```bash
-Copy code
 node server.js
 ```
 The backend will now be running at http://localhost:5000.
@@ -71,17 +67,14 @@ The backend will now be running at http://localhost:5000.
 Return to the root directory and navigate to the frontend directory:
 
 ```bash
-Copy code
 cd frontend
 ```
 3.2 Install the necessary frontend dependencies
 ```bash
-Copy code
 npm install
 ```
 3.3 Run the React development server
 ```bash
-Copy code
 npm start
 ```
 The frontend will now be running at http://localhost:3000.
@@ -100,10 +93,10 @@ Search for movies by title.
 ## Contributing
 If you want to contribute to this project, follow these steps:
 
-Fork the repository.
-Create a new branch (git checkout -b feature-branch).
-Make your changes.
-Commit your changes (git commit -am 'Add new feature').
-Push to your branch (git push origin feature-branch).
-Open a pull request.
-Please provide a clear description of the changes you've made.
+1. Fork the repository.
+2. Create a new branch (git checkout -b feature-branch).
+3. Make your changes.
+4. Commit your changes (git commit -am 'Add new feature').
+5. Push to your branch (git push origin feature-branch).
+6. Open a pull request.
+7. Please provide a clear description of the changes you've made.
