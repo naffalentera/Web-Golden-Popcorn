@@ -155,9 +155,7 @@ const Actor = () => {
 
           if (response.ok) {
             setActors((prevActors) => prevActors.filter((a) => a.id_actor !== actor.id_actor));
-            Swal("Actor deleted successfully!", {
-              icon: "success",
-            });
+            Swal("Actor deleted successfully!", { icon: "success" });
           } else {
             const errorData = await response.json();
             Swal(errorData.message || "Failed to delete actor", { icon: "error" });

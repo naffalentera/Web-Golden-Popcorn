@@ -19,7 +19,12 @@ const SearchPage = () => {
       try {
         const res = await fetch(`http://localhost:5000/api/movies?query=${query}`);
         const data = await res.json();
-        setMovies(data);
+        // setMovies(data);
+        if (Array.isArray(data.movies)) {
+          setMovies(data.movies);  // Menyimpan data hasil filter
+        } else {
+          console.error("Data filter tidak dalam format array:", data);
+        }
       } catch (err) {
         console.error(err.message);
       }
@@ -70,7 +75,12 @@ const SearchPage = () => {
       .then(response => response.json())
       .then(data => {
         console.log('Filtered movies received:', data);
-        setMovies(data);  // Update state movies dengan hasil yang difilter
+        // setMovies(data);  // Update state movies dengan hasil yang difilter
+        if (Array.isArray(data.movies)) {
+          setMovies(data.movies);  // Menyimpan data hasil filter
+        } else {
+          console.error("Data filter tidak dalam format array:", data);
+        }
       })
       .catch(error => {
         console.error('Error fetching filtered movies:', error);

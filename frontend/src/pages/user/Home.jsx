@@ -14,7 +14,7 @@ const HomePage = () => {
   const [sortBy, setSortBy] = useState('alphabetics-az');
   const [resetFilters, setResetFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const moviesPerPage = 20;
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     // Dapatkan token dari query parameter di URL
@@ -49,10 +49,16 @@ const HomePage = () => {
   const fetchMovies = async (page) => {
     try {
       // Mengambil data film dari API, dengan query parameter page dan limit
-      const res = await fetch(`http://localhost:5000/api/movies/all?page=${page}&limit=${moviesPerPage}`);
+      const res = await fetch(`http://localhost:5000/api/movies/all?page=${page}`);
       const data = await res.json(); // Mengubah respons API menjadi JSON
       console.log('Fetched movies:', data);
-      setMovies(data); // Update state movies dengan data baru
+      // setMovies(data); // Update state movies dengan data baru
+      if (Array.isArray(data.movies)) {
+        setMovies(data.movies); // Menyimpan data movies sebagai array
+        setTotalPages(data.totalPages);
+      } else {
+        console.error("Data movies tidak dalam format array:", data);
+      }
     } catch (err) {
       console.error('Error fetching movies:', err); // Menangani error
     }
@@ -96,10 +102,17 @@ const HomePage = () => {
   const handleFilterChange = (filters) => {  
     const { genre, country, award, year } = filters;
 
-    fetch(`http://localhost:5000/api/movies/?genre=${genre}&country=${country}&award=${award}&year=${year}`)
+    fetch(`http://localhost:5000/api/movies/?genre=${genre}&country=${country}&award=${award}&year=${year}&page=1`)
       .then(response => response.json())
       .then(data => {
-        setMovies(data);  // Update state movies dengan hasil yang difilter
+        // setMovies(data);  // Update state movies dengan hasil yang difilter
+        if (Array.isArray(data.movies)) {
+          setMovies(data.movies);  // Menyimpan data hasil filter
+          setTotalPages(data.totalPages);  // Update total pages sesuai filter
+          setCurrentPage(1);
+        } else {
+          console.error("Data filter tidak dalam format array:", data);
+        }
       })
       .catch(error => {
         console.error('Error fetching filtered movies:', error);
@@ -107,7 +120,10 @@ const HomePage = () => {
   };
 
   const handleNextPage = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
+    if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+      fetchMovies(currentPage + 1); // Fetch data page berikutnya
+    }
   };
 
   const handlePrevPage = () => {
@@ -142,7 +158,7 @@ const HomePage = () => {
             <Button className="btn-golden" onClick={handlePrevPage} disabled={currentPage === 1}>
               Previous
             </Button>
-            <span>Page {currentPage}</span>
+            <span>Page {currentPage} of {totalPages}</span>
             <Button className="btn-golden" onClick={handleNextPage}>
               Next
             </Button>
