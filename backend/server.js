@@ -8,14 +8,29 @@ app.use(cors());
 app.use(express.json());
 
 // Pool PostgreSQL
+// const pool = new Pool({
+//   user: process.env.DB_USER,
+//   host: process.env.DB_HOST,
+//   database: process.env.DB_NAME,
+//   password: process.env.DB_PASSWORD,
+//   port: process.env.DB_PORT,
+// });
+
+// Pool PostgreSQL pake connectionString
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // Tambahkan ini jika Railway memerlukan SSL
+  },
 });
 
+pool.connect()
+  .then(() => console.log("Database connected successfully!"))
+  .catch((err) => console.error("Database connection error:", err));
+
+module.exports = pool;
+
+// Uncomment when testing
 // if (require.main === module && process.env.NODE_ENV !== 'test') {
 //   const PORT = process.env.PORT || 5000;
 //   app.listen(PORT, () => {
@@ -1277,4 +1292,3 @@ app.get('/api/genres/search', async (req, res) => {
 
 
 
-// module.exports = app;
