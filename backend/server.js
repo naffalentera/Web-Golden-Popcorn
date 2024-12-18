@@ -30,6 +30,11 @@ pool.connect()
 
 module.exports = pool;
 
+app.get("/api/test", (req, res) => {
+  res.send("API is working!");
+});
+
+
 // Uncomment when testing
 // if (require.main === module && process.env.NODE_ENV !== 'test') {
 //   const PORT = process.env.PORT || 5000;
