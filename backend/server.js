@@ -43,7 +43,15 @@ app.get("/api/test", (req, res) => {
 //   });
 // }
 
-// module.exports = app;
+// Uncomment when test local
+// if (require.main === module) {
+//   const port = 5000;
+//   app.listen(port, () => {
+//     console.log(`Server running on http://localhost:${port}`);
+//   });
+// }
+
+module.exports = app;
 
 
 const { check, body, validationResult } = require('express-validator');
@@ -705,10 +713,10 @@ app.get('/api/admins', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
 
 // -------------------------------------------------------END POINT CMS------------------------------------------------------------- //
 
